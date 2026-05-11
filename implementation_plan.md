@@ -59,7 +59,7 @@ Berikut adalah panduan daftar tugas yang memisahkan ranah Frontend dan Backend. 
 
 ### Backend Tasks (Untuk Gemini CLI)
 - [x] **Setup Project Backend**: Inisialisasi project, setup koneksi Supabase, konfigurasi CORS, dan environment variables.
-- [ ] **Desain Skema Database (SaaS Multi-tenant di Supabase)**:
+- [x] **Desain Skema Database (SaaS Multi-tenant di Supabase)**:
   - Table `users` (Pemilik Villa, Staf, Super Admin) terintegrasi dengan Supabase Auth.
   - Table `villas` (Data properti yang bereferensi ke owner) plus konfigurasi Row Level Security (RLS).
   - Table `bookings` (Data reservasi tamu).

@@ -1,0 +1,92 @@
+.statGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  display: flex;
+  flex-direction: column;
+}
+
+.statTitle {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.statChange {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.positive {
+  color: #10b981; /* emerald-500 */
+}
+
+.negative {
+  color: #ef4444; /* red-500 */
+}
+
+.chartSection {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+}
+
+@media (max-width: 1024px) {
+  .chartSection {
+    grid-template-columns: 1fr;
+  }
+}
+
+.chartCard {
+  min-height: 300px;
+}
+
+.sectionTitle {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.placeholderChart {
+  height: 200px;
+  width: 100%;
+  background: linear-gradient(180deg, rgba(79, 70, 229, 0.1) 0%, rgba(255,255,255,0) 100%);
+  border-bottom: 2px solid var(--primary);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  margin-top: 1rem;
+  position: relative;
+}
+
+.placeholderList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.listItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.listItem:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}

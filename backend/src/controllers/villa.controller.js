@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 import { v4 as uuidv4 } from 'uuid';
 
 /**
@@ -65,9 +65,9 @@ export const getMyVillas = async (req, res) => {
 export const createVilla = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { name, description, location, price_per_night, facilities, is_active } = req.body;
+    const { name, description, location, price_per_night, capacity, facilities, is_active } = req.body;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('villas')
       .insert([
         {
@@ -76,7 +76,8 @@ export const createVilla = async (req, res) => {
           description,
           location,
           price_per_night,
-          facilities: facilities ? JSON.parse(facilities) : [],
+          capacity: capacity ? Number(capacity) : null,
+          facilities: facilities ? (typeof facilities === 'string' ? JSON.parse(facilities) : facilities) : [],
           is_active: is_active ?? true,
           images: []
         }
@@ -105,7 +106,7 @@ export const updateVilla = async (req, res) => {
       updates.facilities = JSON.parse(updates.facilities);
     }
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('villas')
       .update(updates)
       .eq('id', id)
@@ -128,7 +129,7 @@ export const deleteVilla = async (req, res) => {
     const { id } = req.params;
     const ownerId = req.user.id;
 
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('villas')
       .delete()
       .eq('id', id)
@@ -192,7 +193,7 @@ export const uploadVillaImage = async (req, res) => {
     const currentImages = villa.images || [];
     const newImages = [...currentImages, imageUrl];
 
-    const { error: updateError } = await supabase
+    const { error: updateError } = await supabaseAdmin
       .from('villas')
       .update({ images: newImages })
       .eq('id', id);

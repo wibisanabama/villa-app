@@ -52,7 +52,7 @@ export default function VillasPage() {
       name: villa.name,
       location: villa.location,
       price_per_night: villa.price_per_night.toString(),
-      capacity: villa.capacity ? villa.capacity.toString() : '',
+      capacity: villa.capacity !== undefined && villa.capacity !== null ? villa.capacity.toString() : '',
       description: villa.description || ''
     });
     setIsModalOpen(true);

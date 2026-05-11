@@ -86,6 +86,21 @@ export const createVilla = async (req, res) => {
       .single();
 
     if (error) throw error;
+
+    // Check if user is a GUEST and upgrade to OWNER
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('role')
+      .eq('id', ownerId)
+      .single();
+
+    if (profile && profile.role === 'GUEST') {
+      await supabaseAdmin
+        .from('user_profiles')
+        .update({ role: 'OWNER' })
+        .eq('id', ownerId);
+    }
+
     res.status(201).json({ message: 'Villa berhasil dibuat', villa: data });
   } catch (error) {
     console.error('Error creating villa:', error);

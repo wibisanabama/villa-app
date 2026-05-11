@@ -21,9 +21,22 @@ export default function DashboardLayout({
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
         router.replace('/login');
-      } else {
+        return;
+      }
+
+      // Check role
+      const { data: profile } = await supabase
+        .from('user_profiles')
+        .select('role')
+        .eq('id', session.user.id)
+        .single();
+
+      if (profile?.role === 'OWNER' || profile?.role === 'SUPER_ADMIN') {
         setUser(session.user);
         setLoading(false);
+      } else {
+        // Redirect unauthorized users
+        router.replace('/callback');
       }
     };
 
@@ -59,6 +72,9 @@ export default function DashboardLayout({
           </Link>
           <Link href="/dashboard/villas" className={`${styles.navItem} ${pathname.includes('/villas') ? styles.navItemActive : ''}`}>
             Properti Villa
+          </Link>
+          <Link href="/dashboard/staff" className={`${styles.navItem} ${pathname.includes('/staff') ? styles.navItemActive : ''}`}>
+            Manajemen Staf
           </Link>
           <Link href="/dashboard/bookings" className={`${styles.navItem} ${pathname.includes('/bookings') ? styles.navItemActive : ''}`}>
             Pemesanan

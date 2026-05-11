@@ -65,7 +65,7 @@ export const getMyVillas = async (req, res) => {
 export const createVilla = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { name, description, location, price_per_night, facilities, is_active } = req.body;
+    const { name, description, location, price_per_night, capacity, facilities, is_active } = req.body;
 
     const { data, error } = await supabaseAdmin
       .from('villas')
@@ -76,6 +76,7 @@ export const createVilla = async (req, res) => {
           description,
           location,
           price_per_night,
+          capacity: capacity ? Number(capacity) : null,
           facilities: facilities ? (typeof facilities === 'string' ? JSON.parse(facilities) : facilities) : [],
           is_active: is_active ?? true,
           images: []
@@ -100,7 +101,6 @@ export const updateVilla = async (req, res) => {
     const { id } = req.params;
     const ownerId = req.user.id;
     const updates = { ...req.body };
-    delete updates.capacity;
 
     // Pastikan fasilitas di-parse jika ada
     if (updates.facilities && typeof updates.facilities === 'string') {

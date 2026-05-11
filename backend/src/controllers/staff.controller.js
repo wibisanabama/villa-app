@@ -14,7 +14,7 @@ export const getMyStaff = async (req, res) => {
       .select(`
         id,
         created_at,
-        villas (id, name),
+        villas!inner (id, name, owner_id),
         user_profiles (id, full_name, email, phone_number, role)
       `)
       .eq('villas.owner_id', ownerId);

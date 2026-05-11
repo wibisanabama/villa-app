@@ -57,10 +57,6 @@ export default function LoginPage() {
               {loading ? 'Memproses...' : 'Masuk dengan Google'}
             </button>
           </div>
-          
-          <p className={styles.footerText} style={{ marginTop: '2rem' }}>
-            Belum memiliki akun? <Link href="/register" className={styles.link}>Daftar di sini</Link>
-          </p>
         </div>
       </div>
       

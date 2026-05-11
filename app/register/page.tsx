@@ -39,11 +39,22 @@ export default function RegisterPage() {
 
       if (error) throw error;
       
+      if (data.user && !data.session) {
+        // Jika Supabase mensyaratkan konfirmasi email, session akan null
+        const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (signInError) {
+          setError('Pendaftaran berhasil! Silakan cek email Anda untuk memverifikasi akun Anda.');
+          setSuccess(false);
+          return;
+        }
+      }
+      
       setSuccess(true);
-      // Wait a bit then redirect to dashboard
-      setTimeout(() => {
-        router.push('/dashboard');
-      }, 1500);
+      router.push('/dashboard');
       
     } catch (err: any) {
       setError(err.message || 'Gagal melakukan pendaftaran');

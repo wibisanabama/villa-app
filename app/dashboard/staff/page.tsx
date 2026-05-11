@@ -21,7 +21,7 @@ export default function StaffManagementPage() {
       const [staffRes, invRes, villasRes] = await Promise.all([
         fetchWithAuth('/staff'),
         fetchWithAuth('/staff/invitations'),
-        fetchWithAuth('/villas/my-villas')
+        fetchWithAuth('/villas/owner/me')
       ]);
       setStaffList(staffRes);
       setInvitations(invRes);

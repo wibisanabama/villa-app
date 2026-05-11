@@ -74,20 +74,20 @@ Berikut adalah panduan daftar tugas yang memisahkan ranah Frontend dan Backend. 
 - [x] **Integrasi Payment Gateway (Mayar.id)** *(Tahap Lanjut)*: API untuk generate link pembayaran dan webhook endpoint untuk update status pesanan.
 
 ### Frontend Tasks (Untuk Antigravity - Saya)
-- [ ] **Setup Project Frontend**: Inisialisasi Vite + React atau Next.js, sistem routing, dan struktur folder yang modular.
-- [ ] **Desain UI Foundation (Design System)**:
+- [x] **Setup Project Frontend**: Inisialisasi Vite + React atau Next.js, sistem routing, dan struktur folder yang modular.
+- [x] **Desain UI Foundation (Design System)**:
   - Penentuan palet warna premium (contoh: dark mode sleek atau light mode elegan dengan HSL).
   - Pengaturan typography (Google Fonts) dan utility classes CSS.
   - Pembuatan komponen reusable: Button, Custom Input, Modal, Dropdown interaktif, Table, Card.
-- [ ] **Pembuatan Halaman Autentikasi**:
+- [x] **Pembuatan Halaman Autentikasi**:
   - Desain antarmuka Login dan Register SaaS yang memukau secara visual.
-- [ ] **Pembuatan Layout Utama (Tenant Dashboard)**:
+- [x] **Pembuatan Layout Utama (Tenant Dashboard)**:
   - Sidebar navigasi yang mulus, Topbar, dan container utama responsif.
-- [ ] **Halaman Dashboard Overview**:
+- [x] **Halaman Dashboard Overview**:
   - Implementasi UI ringkasan analitik (Stat Cards) dan visualisasi chart yang memiliki micro-animations.
-- [ ] **Halaman Manajemen Villa**:
+- [x] **Halaman Manajemen Villa**:
   - Tabel daftar properti, form tambah/edit villa (UI yang intuitif), dan grid galeri foto.
-- [ ] **Halaman Kalender Pemesanan**:
+- [x] **Halaman Kalender Pemesanan**:
   - Tampilan daftar booking (List View) dan interaktif kalender (Calendar View).
 - [ ] **Integrasi API Frontend**: 
   - Menyambungkan UI dengan endpoint backend menggunakan Fetch API / Axios.

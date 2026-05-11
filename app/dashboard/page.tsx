@@ -13,7 +13,8 @@ export default function DashboardOverview() {
     async function loadData() {
       try {
         const response = await fetchWithAuth('/analytics');
-        setData(response.data);
+        // Backend analytics controller returns the object directly, not wrapped in { data: ... }
+        setData(response.data !== undefined ? response.data : response);
       } catch (err: any) {
         setError(err.message || 'Gagal memuat data analitik');
       } finally {
@@ -33,11 +34,12 @@ export default function DashboardOverview() {
   }
 
   // Jika tidak ada data, gunakan default 0
-  const metrics = data?.metrics || {
+  // Backend return shape: { totalRevenue, totalBookings, completedBookings, monthlyData }
+  const metrics = data || {
     totalRevenue: 0,
-    occupancyRate: 0,
-    activeBookings: 0,
-    pendingConfirmations: 0
+    totalBookings: 0,
+    completedBookings: 0,
+    monthlyData: []
   };
 
   return (
@@ -49,18 +51,18 @@ export default function DashboardOverview() {
         </div>
         
         <div className={`card ${styles.statCard}`}>
-          <div className={styles.statTitle}>Tingkat Okupansi</div>
-          <div className={styles.statValue}>{metrics.occupancyRate}%</div>
+          <div className={styles.statTitle}>Total Pesanan</div>
+          <div className={styles.statValue}>{metrics.totalBookings}</div>
         </div>
         
         <div className={`card ${styles.statCard}`}>
-          <div className={styles.statTitle}>Pemesanan Aktif</div>
-          <div className={styles.statValue}>{metrics.activeBookings}</div>
+          <div className={styles.statTitle}>Pesanan Selesai</div>
+          <div className={styles.statValue}>{metrics.completedBookings}</div>
         </div>
         
         <div className={`card ${styles.statCard}`}>
-          <div className={styles.statTitle}>Menunggu Konfirmasi</div>
-          <div className={styles.statValue}>{metrics.pendingConfirmations}</div>
+          <div className={styles.statTitle}>Dalam Proses</div>
+          <div className={styles.statValue}>{metrics.totalBookings - metrics.completedBookings}</div>
         </div>
       </div>
       

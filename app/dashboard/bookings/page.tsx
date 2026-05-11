@@ -14,7 +14,7 @@ export default function BookingsPage() {
     async function initData() {
       try {
         const res = await fetchWithAuth('/villas/owner/me');
-        const villaData = res.data || [];
+        const villaData = Array.isArray(res) ? res : (res.data || []);
         setVillas(villaData);
         if (villaData.length > 0) {
           setSelectedVilla(villaData[0].id);
@@ -33,7 +33,7 @@ export default function BookingsPage() {
     async function loadBookings() {
       try {
         const res = await fetchWithAuth(`/bookings/villa/${selectedVilla}`);
-        setBookings(res.data || []);
+        setBookings(Array.isArray(res) ? res : (res.data || []));
       } catch (err) {
         console.error('Failed to load bookings', err);
       }

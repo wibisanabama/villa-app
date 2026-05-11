@@ -24,7 +24,7 @@ export default function VillasPage() {
     setLoading(true);
     try {
       const response = await fetchWithAuth('/villas/owner/me');
-      setVillas(response.data || []);
+      setVillas(Array.isArray(response) ? response : (response.data || []));
       setError(null);
     } catch (err: any) {
       setError(err.message || 'Gagal memuat data properti villa');

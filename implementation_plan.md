@@ -89,6 +89,6 @@ Berikut adalah panduan daftar tugas yang memisahkan ranah Frontend dan Backend. 
   - Tabel daftar properti, form tambah/edit villa (UI yang intuitif), dan grid galeri foto.
 - [x] **Halaman Kalender Pemesanan**:
   - Tampilan daftar booking (List View) dan interaktif kalender (Calendar View).
-- [ ] **Integrasi API Frontend**: 
+- [x] **Integrasi API Frontend**: 
   - Menyambungkan UI dengan endpoint backend menggunakan Fetch API / Axios.
   - Handling loading state, error, dan notifikasi (Toast/Alert) secara mulus.

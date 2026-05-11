@@ -1,61 +1,58 @@
-import Link from 'next/link';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { fetchWithAuth } from '../../../lib/api';
 import styles from './page.module.css';
 
 export default function VillasPage() {
+  const [villas, setVillas] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    async function loadVillas() {
+      try {
+        const response = await fetchWithAuth('/villas/owner/me');
+        setVillas(response.data || []);
+      } catch (err: any) {
+        setError(err.message || 'Gagal memuat data properti villa');
+      } finally {
+        setLoading(false);
+      }
+    }
+    
+    loadVillas();
+  }, []);
+
+  if (loading) {
+    return <div>Memuat data properti...</div>;
+  }
+
+  if (error) {
+    return <div className="alert error">{error}</div>;
+  }
+
   return (
     <div>
-      <div className={styles.header}>
-        <h1 className={styles.title}>Manajemen Properti</h1>
-        <button className="btn btn-primary">+ Tambah Villa</button>
+      <div className={styles.pageHeader}>
+        <h2 className={styles.pageTitle}>Manajemen Properti</h2>
+        <button className="btn btn-primary">
+          + Tambah Villa Baru
+        </button>
       </div>
-      
+
       <div className={`card ${styles.tableContainer}`}>
         <table className={styles.table}>
           <thead>
             <tr>
-              <th>Properti</th>
+              <th>Nama Properti</th>
+              <th>Lokasi</th>
               <th>Harga / Malam</th>
-              <th>Kapasitas</th>
               <th>Status</th>
               <th>Aksi</th>
             </tr>
           </thead>
           <tbody>
-            <tr>
-              <td>
-                <div className={styles.villaName}>Villa Serenity Bali</div>
-                <div className={styles.villaLocation}>Ubud, Bali</div>
-              </td>
-              <td>Rp 2.500.000</td>
-              <td>4 Orang</td>
-              <td><span className={`${styles.statusBadge} ${styles.statusActive}`}>Aktif</span></td>
-              <td className={styles.actionCell}>
-                <button className={styles.actionBtn}>Edit</button>
-                <button className={styles.actionBtn}>Hapus</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div className={styles.villaName}>Sunset View Lombok</div>
-                <div className={styles.villaLocation}>Kuta, Lombok</div>
-              </td>
-              <td>Rp 1.800.000</td>
-              <td>2 Orang</td>
-              <td><span className={`${styles.statusBadge} ${styles.statusActive}`}>Aktif</span></td>
-              <td className={styles.actionCell}>
-                <button className={styles.actionBtn}>Edit</button>
-                <button className={styles.actionBtn}>Hapus</button>
-              </td>
-            </tr>
-            <tr>
-              <td>
-                <div className={styles.villaName}>Mountain Retreat Bromo</div>
-                <div className={styles.villaLocation}>Probolinggo, Jatim</div>
-              </td>
-              <td>Rp 1.200.000</td>
-              <td>6 Orang</td>
-              <td><span className={`${styles.statusBadge} ${styles.statusDraft}`}>Draft</span></td>
-              <td className={styles.actionCell}>
                 <button className={styles.actionBtn}>Edit</button>
                 <button className={styles.actionBtn}>Hapus</button>
               </td>

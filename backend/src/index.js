@@ -5,6 +5,7 @@ import { supabase } from './config/supabase.js';
 import authRoutes from './routes/auth.routes.js';
 import villaRoutes from './routes/villa.routes.js';
 import bookingRoutes from './routes/booking.routes.js';
+import analyticsRoutes from './routes/analytics.routes.js';
 
 dotenv.config();
 
@@ -19,6 +20,7 @@ app.use(express.json());
 app.use('/api/auth', authRoutes);
 app.use('/api/villas', villaRoutes);
 app.use('/api/bookings', bookingRoutes);
+app.use('/api/analytics', analyticsRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running!' });

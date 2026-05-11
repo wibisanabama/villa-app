@@ -16,6 +16,7 @@ CREATE TABLE public.user_profiles (
     id UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
     role VARCHAR(50) CHECK (role IN ('SUPER_ADMIN', 'OWNER', 'STAFF', 'GUEST')) DEFAULT 'OWNER',
     full_name VARCHAR(255),
+    email VARCHAR(255),
     phone_number VARCHAR(50),
     subscription_id UUID REFERENCES public.subscriptions(id) ON DELETE SET NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
@@ -117,8 +118,8 @@ CREATE POLICY "Owner can view transactions for their villas" ON public.transacti
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS trigger AS $$
 BEGIN
-  INSERT INTO public.user_profiles (id, full_name)
-  VALUES (new.id, new.raw_user_meta_data->>'full_name');
+  INSERT INTO public.user_profiles (id, full_name, email)
+  VALUES (new.id, new.raw_user_meta_data->>'full_name', new.email);
   RETURN new;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

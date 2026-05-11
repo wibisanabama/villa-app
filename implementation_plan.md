@@ -65,7 +65,7 @@ Berikut adalah panduan daftar tugas yang memisahkan ranah Frontend dan Backend. 
   - Table `bookings` (Data reservasi tamu).
   - Table `transactions` (Pembayaran).
   - Table `subscriptions` (Paket berlangganan SaaS).
-- [ ] **Modul Autentikasi & Otorisasi**:
+- [x] **Modul Autentikasi & Otorisasi**:
   - Setup OAuth Google Login via Supabase Auth.
   - Konfigurasi Role & Permission berbasis JWT dari Supabase atau RLS.
 - [ ] **API Manajemen Properti (Villas)**: CRUD data properti dan fungsionalitas upload foto.

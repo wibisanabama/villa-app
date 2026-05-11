@@ -88,6 +88,7 @@ export const createVilla = async (req, res) => {
     if (error) throw error;
     res.status(201).json({ message: 'Villa berhasil dibuat', villa: data });
   } catch (error) {
+    console.error('Error creating villa:', error);
     res.status(500).json({ message: 'Gagal membuat villa', error: error.message });
   }
 };

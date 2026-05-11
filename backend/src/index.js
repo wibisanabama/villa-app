@@ -1,6 +1,10 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import dns from 'dns';
+
+// Fix untuk Node 18+ undici timeout ke IPv6 Cloudflare (Supabase)
+dns.setDefaultResultOrder('ipv4first');
 import { supabase } from './config/supabase.js';
 import authRoutes from './routes/auth.routes.js';
 import villaRoutes from './routes/villa.routes.js';

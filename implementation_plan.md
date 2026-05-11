@@ -69,7 +69,7 @@ Berikut adalah panduan daftar tugas yang memisahkan ranah Frontend dan Backend. 
   - Setup OAuth Google Login via Supabase Auth.
   - Konfigurasi Role & Permission berbasis JWT dari Supabase atau RLS.
 - [x] **API Manajemen Properti (Villas)**: CRUD data properti dan fungsionalitas upload foto.
-- [ ] **API Pemesanan (Bookings)**: Algoritma untuk mengecek ketersediaan tanggal (*overlapping dates*), membuat booking baru, dan merubah status.
+- [x] **API Pemesanan (Bookings)**: Algoritma untuk mengecek ketersediaan tanggal (*overlapping dates*), membuat booking baru, dan merubah status.
 - [ ] **API Dashboard/Analitik**: Endpoint khusus untuk menghitung total pendapatan, tingkat okupansi, dan data metrik untuk chart bulanan.
 - [ ] **Integrasi Payment Gateway (Mayar.id)** *(Tahap Lanjut)*: API untuk generate link pembayaran dan webhook endpoint untuk update status pesanan.
 

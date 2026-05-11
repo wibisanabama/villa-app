@@ -34,8 +34,8 @@ export default function VillasPage() {
 
   return (
     <div>
-      <div className={styles.pageHeader}>
-        <h2 className={styles.pageTitle}>Manajemen Properti</h2>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Manajemen Properti</h2>
         <button className="btn btn-primary">
           + Tambah Villa Baru
         </button>

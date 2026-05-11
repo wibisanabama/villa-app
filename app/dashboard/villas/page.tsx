@@ -53,10 +53,28 @@ export default function VillasPage() {
             </tr>
           </thead>
           <tbody>
-                <button className={styles.actionBtn}>Edit</button>
-                <button className={styles.actionBtn}>Hapus</button>
-              </td>
-            </tr>
+            {villas.length > 0 ? (
+              villas.map(villa => (
+                <tr key={villa.id}>
+                  <td style={{fontWeight: 500}}>{villa.name}</td>
+                  <td style={{color: 'var(--text-secondary)'}}>{villa.location}</td>
+                  <td>Rp {villa.price_per_night?.toLocaleString('id-ID')}</td>
+                  <td>
+                    <span className={`${styles.badge} ${styles.badgeActive}`}>Aktif</span>
+                  </td>
+                  <td>
+                    <button className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', marginRight: '0.5rem'}}>Edit</button>
+                    <button className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', color: '#e74c3c', borderColor: '#fadbd8'}}>Hapus</button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={5} style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>
+                  Belum ada properti villa. Tambahkan villa pertama Anda!
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>

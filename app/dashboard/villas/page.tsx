@@ -20,6 +20,9 @@ export default function VillasPage() {
     description: ''
   });
 
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
+
   const loadVillas = async () => {
     setLoading(true);
     try {
@@ -42,12 +45,52 @@ export default function VillasPage() {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleEditClick = (villa: any) => {
+    setIsEditMode(true);
+    setEditingId(villa.id);
+    setFormData({
+      name: villa.name,
+      location: villa.location,
+      price_per_night: villa.price_per_night.toString(),
+      capacity: villa.capacity ? villa.capacity.toString() : '',
+      description: villa.description || ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleOpenAddModal = () => {
+    setIsEditMode(false);
+    setEditingId(null);
+    setFormData({
+      name: '',
+      location: '',
+      price_per_night: '',
+      capacity: '',
+      description: ''
+    });
+    setIsModalOpen(true);
+  };
+
+  const handleDelete = async (id: string) => {
+    if (confirm('Apakah Anda yakin ingin menghapus villa ini?')) {
+      try {
+        await fetchWithAuth(`/villas/${id}`, { method: 'DELETE' });
+        loadVillas();
+      } catch (err: any) {
+        alert(`Gagal menghapus villa: ${err.message}`);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
     try {
-      await fetchWithAuth('/villas', {
-        method: 'POST',
+      const endpoint = isEditMode && editingId ? `/villas/${editingId}` : '/villas';
+      const method = isEditMode ? 'PUT' : 'POST';
+      
+      await fetchWithAuth(endpoint, {
+        method,
         body: JSON.stringify({
           ...formData,
           price_per_night: Number(formData.price_per_night),
@@ -55,16 +98,9 @@ export default function VillasPage() {
         })
       });
       setIsModalOpen(false);
-      setFormData({
-        name: '',
-        location: '',
-        price_per_night: '',
-        capacity: '',
-        description: ''
-      });
       loadVillas();
     } catch (err: any) {
-      alert(`Gagal menambah villa: ${err.message}`);
+      alert(`Gagal ${isEditMode ? 'mengedit' : 'menambah'} villa: ${err.message}`);
     } finally {
       setIsSubmitting(false);
     }
@@ -82,7 +118,7 @@ export default function VillasPage() {
     <div>
       <div className={styles.header}>
         <h2 className={styles.title}>Manajemen Properti</h2>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+        <button className="btn btn-primary" onClick={handleOpenAddModal}>
           + Tambah Villa Baru
         </button>
       </div>
@@ -109,8 +145,8 @@ export default function VillasPage() {
                     <span className={`${styles.badge} ${styles.badgeActive}`}>Aktif</span>
                   </td>
                   <td>
-                    <button className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', marginRight: '0.5rem'}}>Edit</button>
-                    <button className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', color: '#e74c3c', borderColor: '#fadbd8'}}>Hapus</button>
+                    <button onClick={() => handleEditClick(villa)} className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', marginRight: '0.5rem'}}>Edit</button>
+                    <button onClick={() => handleDelete(villa.id)} className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', color: '#e74c3c', borderColor: '#fadbd8'}}>Hapus</button>
                   </td>
                 </tr>
               ))
@@ -129,7 +165,7 @@ export default function VillasPage() {
         <div className={styles.modalOverlay}>
           <div className={styles.modalContent}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>Tambah Villa Baru</h3>
+              <h3 className={styles.modalTitle}>{isEditMode ? 'Edit Villa' : 'Tambah Villa Baru'}</h3>
               <button className={styles.closeBtn} onClick={() => setIsModalOpen(false)}>×</button>
             </div>
             <form onSubmit={handleSubmit}>
@@ -156,7 +192,7 @@ export default function VillasPage() {
               <div className={styles.modalActions}>
                 <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Batal</button>
                 <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Menyimpan...' : 'Simpan Properti'}
+                  {isSubmitting ? 'Menyimpan...' : (isEditMode ? 'Simpan Perubahan' : 'Simpan Properti')}
                 </button>
               </div>
             </form>

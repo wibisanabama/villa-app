@@ -99,7 +99,8 @@ export const updateVilla = async (req, res) => {
   try {
     const { id } = req.params;
     const ownerId = req.user.id;
-    const updates = req.body;
+    const updates = { ...req.body };
+    delete updates.capacity;
 
     // Pastikan fasilitas di-parse jika ada
     if (updates.facilities && typeof updates.facilities === 'string') {

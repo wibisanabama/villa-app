@@ -40,10 +40,10 @@ export default function RegisterPage() {
       if (error) throw error;
       
       setSuccess(true);
-      // Wait a bit then redirect to login
+      // Wait a bit then redirect to dashboard
       setTimeout(() => {
-        router.push('/login');
-      }, 3000);
+        router.push('/dashboard');
+      }, 1500);
       
     } catch (err: any) {
       setError(err.message || 'Gagal melakukan pendaftaran');
@@ -80,7 +80,7 @@ export default function RegisterPage() {
           </div>
           
           {error && <div className="alert error" style={{marginBottom: '1rem', color: 'red'}}>{error}</div>}
-          {success && <div className="alert success" style={{marginBottom: '1rem', color: 'green'}}>Pendaftaran berhasil! Silakan periksa email Anda atau langsung login. Mengalihkan...</div>}
+          {success && <div className="alert success" style={{marginBottom: '1rem', color: 'green'}}>Pendaftaran berhasil! Mengalihkan ke dashboard...</div>}
           
           <form onSubmit={handleRegister}>
             <div className={styles.formGroup}>

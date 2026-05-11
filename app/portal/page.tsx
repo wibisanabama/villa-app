@@ -27,7 +27,7 @@ export default function GuestPortal() {
             </div>
             <h2 className={styles.cardTitle}>Cari Villa</h2>
             <p className={styles.cardText}>Lihat daftar villa yang tersedia, periksa ketersediaan tanggal, dan pesan liburan impian Anda.</p>
-            <Link href="#" className="btn btn-primary" style={{ width: '100%' }}>Mulai Pencarian</Link>
+            <Link href="/search" className="btn btn-primary" style={{ width: '100%' }}>Mulai Pencarian</Link>
           </div>
 
           <div className={styles.actionCard}>

@@ -129,11 +129,7 @@ export default function SearchPage() {
           {user ? (
              <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden' }}>
-                  {user.user_metadata?.avatar_url ? (
-                    <img src={user.user_metadata.avatar_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                  ) : (
-                    (userProfile?.full_name || userProfile?.email || user?.email || 'U').charAt(0).toUpperCase()
-                  )}
+                  {(userProfile?.full_name || userProfile?.email || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
                 <span style={{ fontWeight: 500 }}>{userProfile?.full_name || userProfile?.email?.split('@')[0] || user?.email?.split('@')[0] || 'User'}</span>
              </Link>

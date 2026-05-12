@@ -33,15 +33,18 @@ export const requireAuth = async (req, res, next) => {
     if (!profileError && profile) {
       req.user.role = profile.role;
     } else {
-       // Auto-create profile as OWNER for OAuth logins (SaaS tenant)
-       req.user.role = 'OWNER';
+       // Auto-create profile as GUEST for OAuth logins
+       req.user.role = 'GUEST';
        
-       // Fire and forget insert (menggunakan service role key kalau bisa, tapi karena middleware berjalan sebagai user context atau service, kita coba insert biasa)
+       const emailName = user.email ? user.email.split('@')[0] : 'User';
+
+       // Fire and forget insert
        await supabase.from('user_profiles').insert([
          {
            id: user.id,
-           role: 'OWNER',
-           full_name: user.user_metadata?.full_name || user.email,
+           role: 'GUEST',
+           email: user.email,
+           full_name: emailName,
            phone_number: user.user_metadata?.phone || null
          }
        ]);

@@ -8,9 +8,13 @@ export async function fetchWithAuth(endpoint: string, options: RequestInit = {})
   const token = session?.access_token;
 
   const headers: Record<string, string> = {
-    'Content-Type': 'application/json',
     ...(options.headers as Record<string, string> || {}),
   };
+
+  // Only set application/json if we are not sending FormData
+  if (!(options.body instanceof FormData) && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
 
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;

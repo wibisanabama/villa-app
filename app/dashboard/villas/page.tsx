@@ -22,6 +22,7 @@ export default function VillasPage() {
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
 
   const loadVillas = async () => {
     setLoading(true);
@@ -55,6 +56,7 @@ export default function VillasPage() {
       capacity: villa.capacity !== undefined && villa.capacity !== null ? villa.capacity.toString() : '',
       description: villa.description || ''
     });
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -68,6 +70,7 @@ export default function VillasPage() {
       capacity: '',
       description: ''
     });
+    setImageFile(null);
     setIsModalOpen(true);
   };
 
@@ -89,7 +92,7 @@ export default function VillasPage() {
       const endpoint = isEditMode && editingId ? `/villas/${editingId}` : '/villas';
       const method = isEditMode ? 'PUT' : 'POST';
       
-      await fetchWithAuth(endpoint, {
+      const response = await fetchWithAuth(endpoint, {
         method,
         body: JSON.stringify({
           ...formData,
@@ -97,6 +100,20 @@ export default function VillasPage() {
           capacity: Number(formData.capacity)
         })
       });
+
+      const savedVillaId = isEditMode ? editingId : (response.villa ? response.villa.id : response.id); // Or response.data.id
+
+      // Upload image if selected
+      if (imageFile && savedVillaId) {
+        const imageFormData = new FormData();
+        imageFormData.append('image', imageFile);
+
+        await fetchWithAuth(`/villas/${savedVillaId}/images`, {
+          method: 'POST',
+          body: imageFormData
+        });
+      }
+
       setIsModalOpen(false);
       loadVillas();
     } catch (err: any) {
@@ -184,6 +201,11 @@ export default function VillasPage() {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Kapasitas (Orang)</label>
                 <input required type="number" name="capacity" className="input" value={formData.capacity} onChange={handleInputChange} placeholder="e.g. 4" />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Gambar Villa (Utama)</label>
+                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
+                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '0.25rem' }}>Upload gambar baru untuk memperbarui (maks 5MB).</small>
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Deskripsi Singkat</label>

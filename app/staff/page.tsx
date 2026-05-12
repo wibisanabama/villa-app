@@ -10,7 +10,7 @@ export default function StaffApp() {
           <p>Selamat datang di Staff App. Di sini Anda dapat mengelola operasional villa harian.</p>
         </div>
         <div className={styles.ctas}>
-          <Link href="/login" className={styles.secondary}>Logout</Link>
+          <Link href="/search" className={styles.secondary}>Logout</Link>
         </div>
       </main>
     </div>

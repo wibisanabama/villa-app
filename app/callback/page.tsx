@@ -14,7 +14,7 @@ export default function CallbackPage() {
       const { data: { session } } = await supabase.auth.getSession();
       
       if (!session) {
-        router.replace('/login');
+        router.replace('/search');
         return;
       }
 

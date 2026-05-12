@@ -39,7 +39,7 @@ function InviteContent() {
           Untuk menerima undangan ini, Anda harus login atau mendaftar terlebih dahulu.
         </p>
         <button 
-          onClick={() => router.push('/login')} 
+          onClick={() => router.push('/search')} 
           style={{ background: '#4f46e5', color: 'white', padding: '0.75rem 1.5rem', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}
         >
           Masuk / Daftar

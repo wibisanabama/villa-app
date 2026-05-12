@@ -88,7 +88,7 @@ export default function SearchPage() {
           <Link href="/portal">Vilara</Link>
         </div>
         <div className={styles.navLinks}>
-          <Link href="/login" className="btn btn-outline">Log In Owner</Link>
+          <Link href="/login" className="btn btn-outline">Log In</Link>
         </div>
       </header>
 

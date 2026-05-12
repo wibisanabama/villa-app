@@ -233,10 +233,10 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
               <h2 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Dikelola oleh</h2>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ width: '50px', height: '50px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem', fontWeight: 'bold' }}>
-                  {villa.user_profiles?.full_name?.charAt(0) || 'O'}
+                  {(villa.user_profiles?.full_name || villa.user_profiles?.email || 'O').charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>{villa.user_profiles?.full_name || 'Owner'}</p>
+                  <p style={{ fontWeight: 600, fontSize: '1.1rem' }}>{villa.user_profiles?.full_name || villa.user_profiles?.email || 'Owner'}</p>
                   <p style={{ color: 'var(--text-secondary)' }}>Host Terverifikasi</p>
                 </div>
               </div>

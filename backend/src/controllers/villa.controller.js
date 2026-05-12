@@ -27,7 +27,7 @@ export const getVillaById = async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabase
       .from('villas')
-      .select('*, user_profiles(full_name, phone_number)')
+      .select('*, user_profiles(full_name, email, phone_number)')
       .eq('id', id)
       .single();
 

@@ -178,7 +178,16 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className={styles.navLinks}>
           {user ? (
-             <Link href="/dashboard" className="btn btn-outline">Dashboard Saya</Link>
+             <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
+                <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden' }}>
+                  {user.user_metadata?.avatar_url ? (
+                    <img src={user.user_metadata.avatar_url} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  ) : (
+                    (guestName || guestEmail || user?.email || 'U').charAt(0).toUpperCase()
+                  )}
+                </div>
+                <span style={{ fontWeight: 500 }}>{guestName || guestEmail?.split('@')[0] || user?.email?.split('@')[0] || 'User'}</span>
+             </Link>
           ) : (
              <button className="btn btn-outline" onClick={() => setShowLoginModal(true)}>Log In</button>
           )}

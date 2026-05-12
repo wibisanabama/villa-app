@@ -179,7 +179,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className={styles.navLinks}>
           {user ? (
-             <Link href={userProfile?.role === 'OWNER' || userProfile?.role === 'SUPER_ADMIN' ? '/dashboard' : '/become-owner'} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
+             <Link href="/profile" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden' }}>
                   {(userProfile?.full_name || userProfile?.email || guestName || guestEmail || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>

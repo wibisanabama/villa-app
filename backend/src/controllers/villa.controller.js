@@ -189,7 +189,7 @@ export const uploadVillaImage = async (req, res) => {
     const fileExt = req.file.originalname.split('.').pop();
     const fileName = `${id}/${uuidv4()}.${fileExt}`;
 
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
       .from('villa-images')
       .upload(fileName, req.file.buffer, {
         contentType: req.file.mimetype,
@@ -199,7 +199,7 @@ export const uploadVillaImage = async (req, res) => {
     if (uploadError) throw uploadError;
 
     // 3. Dapatkan Public URL
-    const { data: publicUrlData } = supabase.storage
+    const { data: publicUrlData } = supabaseAdmin.storage
       .from('villa-images')
       .getPublicUrl(fileName);
 

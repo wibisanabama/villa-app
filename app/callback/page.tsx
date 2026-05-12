@@ -48,7 +48,7 @@ export default function CallbackPage() {
       } else if (profile?.role === 'STAFF') {
         router.replace('/staff');
       } else {
-        router.replace('/portal'); // default to guest portal
+        router.replace('/search'); // default to search page
       }
     };
 

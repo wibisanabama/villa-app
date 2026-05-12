@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { fetchWithAuth } from '../../../lib/api';
+import { fetchWithAuth } from '../../lib/api';
 import styles from './become-owner.module.css';
 
 export default function BecomeOwnerPage() {

@@ -207,7 +207,7 @@ export default function SearchPage() {
       </main>
       
       {/* Define global keyframes for skeleton loading if not already defined */}
-      <style dangerouslySetWidth={{
+      <style dangerouslySetInnerHTML={{
         __html: `
           @keyframes pulse {
             0%, 100% { opacity: 1; }

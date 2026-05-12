@@ -124,7 +124,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className={styles.portalContainer}>
         <header className={styles.header}>
-          <div className={styles.logo}><Link href="/portal">Villa SaaS</Link></div>
+          <div className={styles.logo}><Link href="/">Vilara</Link></div>
         </header>
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', flex: 1, height: '60vh' }}>
           <div style={{ fontSize: '1.2rem', color: 'var(--text-secondary)' }}>Memuat data villa...</div>
@@ -137,7 +137,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
     return (
       <div className={styles.portalContainer}>
         <header className={styles.header}>
-          <div className={styles.logo}><Link href="/portal">Villa SaaS</Link></div>
+          <div className={styles.logo}><Link href="/">Vilara</Link></div>
         </header>
         <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', flex: 1, height: '60vh', textAlign: 'center' }}>
           <h2 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Villa Tidak Ditemukan</h2>
@@ -152,7 +152,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
     <div className={styles.portalContainer}>
       <header className={styles.header}>
         <div className={styles.logo}>
-          <Link href="/portal">Villa SaaS</Link>
+          <Link href="/">Vilara</Link>
         </div>
         <div className={styles.navLinks}>
           {user ? (

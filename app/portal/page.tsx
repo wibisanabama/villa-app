@@ -5,7 +5,7 @@ export default function GuestPortal() {
   return (
     <div className={styles.portalContainer}>
       <header className={styles.header}>
-        <div className={styles.logo}>Villa SaaS</div>
+        <div className={styles.logo}>Vilara</div>
         <div className={styles.navLinks}>
           <Link href="/login" className="btn btn-outline">Log In Owner</Link>
         </div>

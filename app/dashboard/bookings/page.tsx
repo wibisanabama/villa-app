@@ -91,8 +91,8 @@ export default function BookingsPage() {
               bookings.map((b) => (
                 <tr key={b.id} style={{borderBottom: '1px solid var(--border)'}}>
                   <td style={{padding: '1rem', fontWeight: 500}}>{b.guest_name}</td>
-                  <td style={{padding: '1rem'}}>{new Date(b.start_date).toLocaleDateString('id-ID')}</td>
-                  <td style={{padding: '1rem'}}>{new Date(b.end_date).toLocaleDateString('id-ID')}</td>
+                  <td style={{padding: '1rem'}}>{new Date(b.check_in_date).toLocaleDateString('id-ID')}</td>
+                  <td style={{padding: '1rem'}}>{new Date(b.check_out_date).toLocaleDateString('id-ID')}</td>
                   <td style={{padding: '1rem'}}>Rp {b.total_price.toLocaleString('id-ID')}</td>
                   <td style={{padding: '1rem'}}>{b.status}</td>
                 </tr>

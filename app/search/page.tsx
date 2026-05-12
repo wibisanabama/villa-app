@@ -6,7 +6,7 @@ export default function SearchPage() {
     <div className={styles.portalContainer}>
       <header className={styles.header}>
         <div className={styles.logo}>
-          <Link href="/portal">Villa SaaS</Link>
+          <Link href="/portal">Vilara</Link>
         </div>
         <div className={styles.navLinks}>
           <Link href="/login" className="btn btn-outline">Log In Owner</Link>

@@ -8,7 +8,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Villa SaaS - Dashboard",
+  title: "Vilara - Dashboard",
   description: "Aplikasi manajemen villa terpusat",
 };
 

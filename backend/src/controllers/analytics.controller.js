@@ -1,4 +1,4 @@
-import { supabase } from '../config/supabase.js';
+import { supabase, supabaseAdmin } from '../config/supabase.js';
 
 /**
  * API: Mendapatkan metrik dashboard (Total Pendapatan, Total Pesanan, Chart Bulanan)
@@ -7,9 +7,11 @@ import { supabase } from '../config/supabase.js';
 export const getDashboardMetrics = async (req, res) => {
   try {
     const ownerId = req.user.id;
+    // Gunakan supabaseAdmin jika tersedia untuk menghindari kendala RLS di sisi backend yang sudah terautentikasi
+    const client = supabaseAdmin || supabase;
 
     // 1. Dapatkan daftar villa milik owner
-    const { data: villas, error: villasError } = await supabase
+    const { data: villas, error: villasError } = await client
       .from('villas')
       .select('id')
       .eq('owner_id', ownerId);
@@ -21,6 +23,7 @@ export const getDashboardMetrics = async (req, res) => {
         totalRevenue: 0,
         totalBookings: 0,
         completedBookings: 0,
+        recentBookings: [],
         monthlyData: []
       });
     }
@@ -28,7 +31,7 @@ export const getDashboardMetrics = async (req, res) => {
     const villaIds = villas.map(v => v.id);
 
     // 2. Dapatkan semua bookings untuk villa-villa tersebut (hanya yang statusnya bukan CANCELLED)
-    const { data: bookings, error: bookingsError } = await supabase
+    const { data: bookings, error: bookingsError } = await client
       .from('bookings')
       .select('check_in_date, total_price, status')
       .in('villa_id', villaIds)
@@ -49,7 +52,7 @@ export const getDashboardMetrics = async (req, res) => {
     const currentYear = new Date().getFullYear();
 
     bookings.forEach(booking => {
-      // Kita hitung revenue hanya untuk yang COMPLETED atau CONFIRMED (bisa disesuaikan dengan aturan bisnis)
+      // Kita hitung revenue hanya untuk yang COMPLETED atau CONFIRMED
       if (booking.status === 'COMPLETED' || booking.status === 'CONFIRMED') {
         totalRevenue += Number(booking.total_price);
         if (booking.status === 'COMPLETED') completedBookings++;
@@ -67,6 +70,16 @@ export const getDashboardMetrics = async (req, res) => {
       }
     });
 
+    // 4. Dapatkan 5 pemesanan terbaru
+    const { data: recentBookings, error: recentError } = await client
+      .from('bookings')
+      .select('id, guest_name, check_in_date, total_price, status, villas(name)')
+      .in('villa_id', villaIds)
+      .order('created_at', { ascending: false })
+      .limit(5);
+
+    if (recentError) throw recentError;
+
     // Ubah format bulanan menjadi array agar mudah di-render di chart Frontend
     const monthlyData = months.map(month => ({
       name: month,
@@ -78,6 +91,7 @@ export const getDashboardMetrics = async (req, res) => {
       totalRevenue,
       totalBookings,
       completedBookings,
+      recentBookings,
       monthlyData
     });
   } catch (error) {

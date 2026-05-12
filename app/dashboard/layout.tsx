@@ -65,7 +65,7 @@ export default function DashboardLayout({
   return (
     <div className={styles.dashboardContainer}>
       <aside className={styles.sidebar}>
-        <div className={styles.logoArea}>Villa SaaS</div>
+        <div className={styles.logoArea}>Vilara</div>
         <nav className={styles.nav}>
           <Link href="/dashboard" className={`${styles.navItem} ${pathname === '/dashboard' ? styles.navItemActive : ''}`}>
             Dashboard

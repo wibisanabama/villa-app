@@ -19,6 +19,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
 
   // Booking state
   const [user, setUser] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guestName, setGuestName] = useState('');
@@ -178,11 +179,11 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
         </div>
         <div className={styles.navLinks}>
           {user ? (
-             <Link href="/dashboard" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
+             <Link href={userProfile?.role === 'OWNER' || userProfile?.role === 'SUPER_ADMIN' ? '/dashboard' : '/become-owner'} style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', textDecoration: 'none', color: 'var(--foreground)' }}>
                 <div style={{ width: '36px', height: '36px', borderRadius: '50%', backgroundColor: 'var(--primary)', color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', overflow: 'hidden' }}>
-                  {(guestName || guestEmail || user?.email || 'U').charAt(0).toUpperCase()}
+                  {(userProfile?.full_name || userProfile?.email || guestName || guestEmail || user?.email || 'U').charAt(0).toUpperCase()}
                 </div>
-                <span style={{ fontWeight: 500 }}>{guestName || guestEmail?.split('@')[0] || user?.email?.split('@')[0] || 'User'}</span>
+                <span style={{ fontWeight: 500 }}>{userProfile?.full_name || userProfile?.email?.split('@')[0] || guestName || guestEmail?.split('@')[0] || user?.email?.split('@')[0] || 'User'}</span>
              </Link>
           ) : (
              <button className="btn btn-outline" onClick={() => setShowLoginModal(true)}>Log In</button>

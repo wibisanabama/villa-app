@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchWithAuth } from '../../../lib/api';
 import { supabase } from '../../../lib/supabase';
-import styles from '../../portal/portal.module.css';
+import styles from '../search.module.css';
 
 export default function VillaDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();

@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { fetchWithAuth } from '../../lib/api';
-import styles from '../portal/portal.module.css';
+import styles from './search.module.css';
 
 export default function SearchPage() {
   const [allVillas, setAllVillas] = useState<any[]>([]);
@@ -85,7 +85,7 @@ export default function SearchPage() {
     <div className={styles.portalContainer}>
       <header className={styles.header}>
         <div className={styles.logo}>
-          <Link href="/portal">Vilara</Link>
+          <Link href="/">Vilara</Link>
         </div>
         <div className={styles.navLinks}>
           <Link href="/login" className="btn btn-outline">Log In</Link>

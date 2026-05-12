@@ -23,6 +23,8 @@ export default function VillasPage() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imageFile2, setImageFile2] = useState<File | null>(null);
+  const [imageFile3, setImageFile3] = useState<File | null>(null);
 
   const loadVillas = async () => {
     setLoading(true);
@@ -57,6 +59,8 @@ export default function VillasPage() {
       description: villa.description || ''
     });
     setImageFile(null);
+    setImageFile2(null);
+    setImageFile3(null);
     setIsModalOpen(true);
   };
 
@@ -71,6 +75,8 @@ export default function VillasPage() {
       description: ''
     });
     setImageFile(null);
+    setImageFile2(null);
+    setImageFile3(null);
     setIsModalOpen(true);
   };
 
@@ -104,9 +110,11 @@ export default function VillasPage() {
       const savedVillaId = isEditMode ? editingId : (response.villa ? response.villa.id : response.id); // Or response.data.id
 
       // Upload image if selected
-      if (imageFile && savedVillaId) {
+      if ((imageFile || imageFile2 || imageFile3) && savedVillaId) {
         const imageFormData = new FormData();
-        imageFormData.append('image', imageFile);
+        if (imageFile) imageFormData.append('images', imageFile);
+        if (imageFile2) imageFormData.append('images', imageFile2);
+        if (imageFile3) imageFormData.append('images', imageFile3);
 
         await fetchWithAuth(`/villas/${savedVillaId}/images`, {
           method: 'POST',
@@ -205,7 +213,15 @@ export default function VillasPage() {
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Gambar Villa (Utama)</label>
                 <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
-                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '0.25rem' }}>Upload gambar baru untuk memperbarui (maks 5MB).</small>
+                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '0.25rem' }}>Upload gambar utama (maks 5MB).</small>
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Gambar Villa Kedua (Opsional)</label>
+                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile2(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
+              </div>
+              <div className={styles.formGroup}>
+                <label className={styles.formLabel}>Gambar Villa Ketiga (Opsional)</label>
+                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile3(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
               </div>
               <div className={styles.formGroup}>
                 <label className={styles.formLabel}>Deskripsi Singkat</label>

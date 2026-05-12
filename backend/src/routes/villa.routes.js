@@ -39,11 +39,11 @@ router.post('/', requireRole(['OWNER', 'SUPER_ADMIN']), createVilla);
 router.put('/:id', requireRole(['OWNER', 'SUPER_ADMIN']), updateVilla);
 router.delete('/:id', requireRole(['OWNER', 'SUPER_ADMIN']), deleteVilla);
 
-// Endpoint upload gambar (menggunakan multer single file 'image')
+// Endpoint upload gambar (menggunakan multer array 'images')
 router.post(
   '/:id/images',
   requireRole(['OWNER', 'SUPER_ADMIN']),
-  upload.single('image'),
+  upload.array('images', 3),
   uploadVillaImage
 );
 

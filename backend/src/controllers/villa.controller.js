@@ -166,7 +166,7 @@ export const uploadVillaImage = async (req, res) => {
     const { id } = req.params;
     const ownerId = req.user.id;
 
-    if (!req.file) {
+    if (!req.files || req.files.length === 0) {
       return res.status(400).json({ message: 'Tidak ada file yang diunggah' });
     }
 
@@ -185,29 +185,33 @@ export const uploadVillaImage = async (req, res) => {
       return res.status(403).json({ message: 'Forbidden: Anda bukan pemilik villa ini' });
     }
 
-    // 2. Upload file ke Supabase Storage (Pastikan Anda sudah membuat bucket 'villa-images')
-    const fileExt = req.file.originalname.split('.').pop();
-    const fileName = `${id}/${uuidv4()}.${fileExt}`;
+    const uploadedUrls = [];
 
-    const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
-      .from('villa-images')
-      .upload(fileName, req.file.buffer, {
-        contentType: req.file.mimetype,
-        upsert: false
-      });
+    // 2. Upload setiap file ke Supabase Storage
+    for (const file of req.files) {
+      const fileExt = file.originalname.split('.').pop();
+      const fileName = `${id}/${uuidv4()}.${fileExt}`;
 
-    if (uploadError) throw uploadError;
+      const { data: uploadData, error: uploadError } = await supabaseAdmin.storage
+        .from('villa-images')
+        .upload(fileName, file.buffer, {
+          contentType: file.mimetype,
+          upsert: false
+        });
 
-    // 3. Dapatkan Public URL
-    const { data: publicUrlData } = supabaseAdmin.storage
-      .from('villa-images')
-      .getPublicUrl(fileName);
+      if (uploadError) throw uploadError;
 
-    const imageUrl = publicUrlData.publicUrl;
+      // 3. Dapatkan Public URL
+      const { data: publicUrlData } = supabaseAdmin.storage
+        .from('villa-images')
+        .getPublicUrl(fileName);
 
-    // 4. Update tabel villas dengan URL gambar baru
+      uploadedUrls.push(publicUrlData.publicUrl);
+    }
+
+    // 4. Update tabel villas dengan URL gambar baru (tambahkan ke array yang sudah ada)
     const currentImages = villa.images || [];
-    const newImages = [...currentImages, imageUrl];
+    const newImages = [...currentImages, ...uploadedUrls];
 
     const { error: updateError } = await supabaseAdmin
       .from('villas')
@@ -216,7 +220,7 @@ export const uploadVillaImage = async (req, res) => {
 
     if (updateError) throw updateError;
 
-    res.json({ message: 'Gambar berhasil diunggah', imageUrl });
+    res.json({ message: 'Gambar berhasil diunggah', imageUrls: newImages });
   } catch (error) {
     console.error(error);
     res.status(500).json({ message: 'Gagal mengunggah gambar', error: error.message });

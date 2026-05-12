@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { fetchWithAuth } from '../../lib/api';
 import styles from './become-owner.module.css';
@@ -45,6 +46,9 @@ export default function BecomeOwnerPage() {
   return (
     <div className={styles.container}>
       <div className={styles.formCard}>
+        <Link href="/profile" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', color: 'var(--text-secondary)', marginBottom: '1.5rem', textDecoration: 'none', fontWeight: 500 }}>
+          &larr; Kembali ke Profil
+        </Link>
         <h1 className={styles.title}>Daftar Sebagai Owner</h1>
         <p className={styles.subtitle}>Masukkan detail properti pertama Anda untuk memulai.</p>
         

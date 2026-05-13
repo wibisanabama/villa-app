@@ -35,7 +35,7 @@ export const getMyStaff = async (req, res) => {
 export const getInvitations = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('staff_invitations')
       .select('*, villas(name)')
       .eq('created_by', ownerId)
@@ -61,7 +61,7 @@ export const inviteStaff = async (req, res) => {
     }
 
     // Pastikan villa ini adalah milik owner
-    const { data: villa } = await supabase.from('villas').select('id').eq('id', villa_id).eq('owner_id', ownerId).single();
+    const { data: villa } = await supabaseAdmin.from('villas').select('id').eq('id', villa_id).eq('owner_id', ownerId).single();
     if (!villa) {
       return res.status(403).json({ message: 'Villa tidak ditemukan atau bukan milik Anda' });
     }

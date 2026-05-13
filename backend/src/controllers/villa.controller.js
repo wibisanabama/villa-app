@@ -46,7 +46,7 @@ export const getVillaById = async (req, res) => {
 export const getMyVillas = async (req, res) => {
   try {
     const ownerId = req.user.id;
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('villas')
       .select('*')
       .eq('owner_id', ownerId)

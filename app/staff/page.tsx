@@ -1,7 +1,17 @@
+'use client';
+
+import { useRouter } from 'next/navigation';
+import { supabase } from '../../lib/supabase';
 import styles from '../page.module.css';
-import Link from 'next/link';
 
 export default function StaffApp() {
+  const router = useRouter();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    router.push('/search');
+  };
+
   return (
     <div className={styles.page}>
       <main className={styles.main}>
@@ -10,7 +20,7 @@ export default function StaffApp() {
           <p>Selamat datang di Staff App. Di sini Anda dapat mengelola operasional villa harian.</p>
         </div>
         <div className={styles.ctas}>
-          <Link href="/search" className={styles.secondary}>Logout</Link>
+          <button onClick={handleLogout} className={styles.secondary}>Logout</button>
         </div>
       </main>
     </div>

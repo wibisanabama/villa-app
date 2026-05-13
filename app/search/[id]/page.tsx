@@ -127,9 +127,9 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
       });
 
       setBookingSuccess(true);
-      // Wait a bit before redirecting to dashboard bookings or payment
+      // Redirect ke profile setelah berhasil booking (bukan dashboard karena GUEST tidak punya akses)
       setTimeout(() => {
-        router.push('/dashboard/bookings');
+        router.push('/profile');
       }, 2000);
 
     } catch (err: any) {

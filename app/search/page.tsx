@@ -71,6 +71,13 @@ export default function SearchPage() {
     }
   };
 
+  const handleReset = () => {
+    setSearchQuery('');
+    setCheckIn('');
+    setCheckOut('');
+    setDisplayedVillas(allVillas);
+  };
+
   const handleSearch = async () => {
     setIsSearching(true);
     try {
@@ -175,7 +182,7 @@ export default function SearchPage() {
                 onChange={(e) => setCheckOut(e.target.value)}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
               <button 
                 className="btn btn-primary" 
                 style={{ padding: '0.625rem 2rem' }}
@@ -183,6 +190,14 @@ export default function SearchPage() {
                 disabled={isSearching}
               >
                 {isSearching ? 'Mencari...' : 'Cari'}
+              </button>
+              <button 
+                className="btn btn-outline" 
+                style={{ padding: '0.625rem 1.5rem' }}
+                onClick={handleReset}
+                disabled={isSearching}
+              >
+                Reset
               </button>
             </div>
           </div>
@@ -214,7 +229,7 @@ export default function SearchPage() {
             ) : displayedVillas.length === 0 ? (
                <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '4rem 2rem', backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)', border: '1px dashed var(--border)' }}>
                  <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Tidak ada villa yang ditemukan sesuai kriteria Anda.</p>
-                 <button onClick={() => {setSearchQuery(''); setCheckIn(''); setCheckOut(''); setDisplayedVillas(allVillas);}} className="btn btn-outline" style={{ marginTop: '1rem' }}>Reset Pencarian</button>
+                 <button onClick={handleReset} className="btn btn-outline" style={{ marginTop: '1rem' }}>Reset Pencarian</button>
                </div>
             ) : (
                displayedVillas.map((villa) => (

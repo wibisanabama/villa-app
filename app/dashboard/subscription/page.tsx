@@ -57,11 +57,18 @@ export default function SubscriptionPage() {
 
     setUpgrading(slug);
     try {
-      await fetchWithAuth('/subscriptions/upgrade', {
+      const res = await fetchWithAuth('/payments/subscription', {
         method: 'POST',
         body: JSON.stringify({ plan_slug: slug })
       });
-      // Reload data
+
+      if (res.payment_link) {
+        // Arahkan ke Mayar Payment
+        window.location.href = res.payment_link;
+        return;
+      }
+
+      // Jika plan gratis (tidak butuh bayar)
       const myRes = await fetchWithAuth('/subscriptions/me');
       setCurrentSub(myRes.subscription);
       setVillaCount(myRes.villa_count);

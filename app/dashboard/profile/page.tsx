@@ -1,169 +1,202 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
-import styles from './profile.module.css';
+import { fetchWithAuth } from '../../../lib/api';
 
 export default function OwnerProfilePage() {
   const router = useRouter();
   const [user, setUser] = useState<any>(null);
-  const [profile, setProfile] = useState<any>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+
   const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({ full_name: '', phone_number: '' });
+  const [fullName, setFullName] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [saving, setSaving] = useState(false);
-  const [successMsg, setSuccessMsg] = useState('');
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
 
   useEffect(() => {
-    const load = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { router.replace('/search'); return; }
-      setUser(session.user);
+    const fetchProfile = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) { router.replace('/search'); return; }
+        setUser(session.user);
 
-      const { data: p } = await supabase
-        .from('user_profiles')
-        .select('*')
-        .eq('id', session.user.id)
-        .single();
+        const { data: profile } = await supabase
+          .from('user_profiles')
+          .select('*')
+          .eq('id', session.user.id)
+          .single();
 
-      if (p) {
-        setProfile(p);
-        setEditForm({ full_name: p.full_name || '', phone_number: p.phone_number || '' });
+        if (profile) {
+          setUserProfile(profile);
+          setFullName(profile.full_name || profile.email?.split('@')[0] || '');
+          setPhoneNumber(profile.phone_number || '');
+        }
+      } catch (err) {
+        console.error('Error fetching profile:', err);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    load();
+    fetchProfile();
   }, [router]);
-
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    const { error } = await supabase
-      .from('user_profiles')
-      .update({ full_name: editForm.full_name, phone_number: editForm.phone_number })
-      .eq('id', user.id);
-
-    setSaving(false);
-    if (!error) {
-      setProfile({ ...profile, ...editForm });
-      setIsEditing(false);
-      setSuccessMsg('Profil berhasil diperbarui!');
-      setTimeout(() => setSuccessMsg(''), 3000);
-    }
-  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
     router.push('/search');
   };
 
-  if (loading) return <div className={styles.loading}>Memuat profil...</div>;
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError(null);
+    setSuccess(null);
+    try {
+      await fetchWithAuth('/auth/me', {
+        method: 'PUT',
+        body: JSON.stringify({ full_name: fullName, phone_number: phoneNumber })
+      });
+
+      if (avatarFile) {
+        const formData = new FormData();
+        formData.append('avatar', avatarFile);
+        await fetchWithAuth('/auth/me/avatar', { method: 'POST', body: formData });
+      }
+
+      setSuccess('Profil berhasil diperbarui!');
+      setIsEditing(false);
+
+      const { data: profile } = await supabase
+        .from('user_profiles').select('*').eq('id', user.id).single();
+      if (profile) setUserProfile(profile);
+    } catch (err: any) {
+      setError(err.message || 'Gagal menyimpan profil');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
+    return <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--text-secondary)' }}>Memuat profil...</div>;
+  }
+
+  if (!user) return null;
+
+  const displayAvatar = userProfile?.avatar_url;
+  const initial = (userProfile?.full_name || userProfile?.email || user?.email || 'O').charAt(0).toUpperCase();
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.pageTitle}>Profil Saya</h1>
-
-      {successMsg && (
-        <div className={styles.successAlert}>{successMsg}</div>
+    <div style={{ maxWidth: '800px' }}>
+      {success && (
+        <div style={{ padding: '1rem', backgroundColor: '#dcfce7', color: '#166534', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', textAlign: 'center' }}>
+          {success}
+        </div>
+      )}
+      {error && (
+        <div style={{ padding: '1rem', backgroundColor: '#fee2e2', color: '#991b1b', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', textAlign: 'center' }}>
+          {error}
+        </div>
       )}
 
-      {/* Avatar & Info Card */}
-      <div className={styles.profileCard}>
-        <div className={styles.avatarSection}>
-          <div className={styles.avatarLg}>
-            {user?.email?.[0].toUpperCase() || 'O'}
-          </div>
-          <div>
-            <div className={styles.displayName}>{profile?.full_name || user?.email}</div>
-            <div className={styles.displayEmail}>{user?.email}</div>
-            <span className={styles.roleBadge}>{profile?.role || 'OWNER'}</span>
-          </div>
-        </div>
-      </div>
+      <div style={{ backgroundColor: 'var(--surface)', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', border: '1px solid var(--border)', overflow: 'hidden' }}>
+        {/* Cover Header */}
+        <div style={{ height: '120px', background: 'linear-gradient(135deg, var(--primary), #6366f1)' }}></div>
 
-      {/* Info Details */}
-      <div className={styles.detailCard}>
-        <div className={styles.detailHeader}>
-          <h2 className={styles.sectionTitle}>Informasi Akun</h2>
-          {!isEditing && (
-            <button className="btn btn-outline" onClick={() => setIsEditing(true)}>
-              Edit Profil
-            </button>
+        <div style={{ padding: '0 2rem 2rem 2rem', position: 'relative' }}>
+          {/* Avatar */}
+          <div style={{
+            width: '100px', height: '100px', borderRadius: '50%', backgroundColor: 'var(--surface)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', fontSize: '2.5rem',
+            color: 'var(--primary)', border: '4px solid var(--surface)',
+            marginTop: '-50px', marginBottom: '1.5rem',
+            boxShadow: 'var(--shadow-sm)', overflow: 'hidden', position: 'relative'
+          }}>
+            {displayAvatar ? (
+              <img src={displayAvatar} alt="Profile" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            ) : initial}
+          </div>
+
+          {isEditing ? (
+            <form onSubmit={handleSave} style={{ marginBottom: '2.5rem' }}>
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="label">Foto Profil Baru (Opsional)</label>
+                <input type="file" accept="image/*" className="input" onChange={(e) => setAvatarFile(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
+              </div>
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="label">Nama Lengkap / Username</label>
+                <input type="text" required className="input" value={fullName} onChange={(e) => setFullName(e.target.value)} />
+              </div>
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label className="label">Nomor Telepon (Opsional)</label>
+                <input type="tel" className="input" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="08123456789" />
+              </div>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button type="submit" className="btn btn-primary" disabled={saving}>
+                  {saving ? 'Menyimpan...' : 'Simpan Perubahan'}
+                </button>
+                <button type="button" className="btn btn-outline" onClick={() => { setIsEditing(false); setAvatarFile(null); }} disabled={saving}>
+                  Batal
+                </button>
+              </div>
+            </form>
+          ) : (
+            <div style={{ marginBottom: '2.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div>
+                  <h2 style={{ fontSize: '1.75rem', fontWeight: 700, marginBottom: '0.25rem', color: 'var(--foreground)' }}>
+                    {userProfile?.full_name || userProfile?.email?.split('@')[0] || user?.email?.split('@')[0]}
+                  </h2>
+                  <p style={{ color: 'var(--text-secondary)', marginBottom: '1.5rem' }}>{userProfile?.email || user.email}</p>
+                </div>
+                <button onClick={() => setIsEditing(true)} className="btn btn-outline" style={{ padding: '0.5rem 1rem', fontSize: '0.875rem' }}>
+                  Edit Profil
+                </button>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', backgroundColor: '#f8fafc', padding: '1.5rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                <div>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Role Akun</p>
+                  <p style={{ fontWeight: 600, color: 'var(--foreground)' }}>
+                    {userProfile?.role === 'SUPER_ADMIN' ? 'Super Admin' : userProfile?.role === 'OWNER' ? 'Pemilik Properti (Owner)' : userProfile?.role === 'STAFF' ? 'Staf Pengelola' : 'Pengguna Biasa (Guest)'}
+                  </p>
+                </div>
+                <div>
+                  <p style={{ fontSize: '0.875rem', color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>Nomor Telepon</p>
+                  <p style={{ fontWeight: 600, color: 'var(--foreground)' }}>{userProfile?.phone_number || '-'}</p>
+                </div>
+              </div>
+            </div>
           )}
-        </div>
 
-        {isEditing ? (
-          <form onSubmit={handleSave} className={styles.form}>
-            <div className={styles.formRow}>
-              <label className="label">Nama Lengkap</label>
-              <input
-                type="text"
-                className="input"
-                value={editForm.full_name}
-                onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
-                placeholder="Nama lengkap Anda"
-              />
+          {/* Actions */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', borderTop: '1px solid var(--border)', paddingTop: '2rem' }}>
+            <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Menu Utama</h3>
+
+            {/* Dashboard quick access */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1.5rem', backgroundColor: '#e0e7ff', borderRadius: 'var(--radius-md)', border: '1px solid #c7d2fe' }}>
+              <div>
+                <h4 style={{ fontWeight: 600, color: '#3730a3', marginBottom: '0.25rem' }}>Manajemen Properti</h4>
+                <p style={{ fontSize: '0.875rem', color: '#4f46e5' }}>Kelola villa, pesanan, dan analitik di halaman lain.</p>
+              </div>
+              <a href="/dashboard" className="btn btn-primary" style={{ whiteSpace: 'nowrap', textDecoration: 'none' }}>
+                Buka Dashboard
+              </a>
             </div>
-            <div className={styles.formRow}>
-              <label className="label">Nomor Telepon</label>
-              <input
-                type="text"
-                className="input"
-                value={editForm.phone_number}
-                onChange={(e) => setEditForm({ ...editForm, phone_number: e.target.value })}
-                placeholder="e.g. 08123456789"
-              />
-            </div>
-            <div className={styles.formActions}>
-              <button type="button" className="btn btn-outline" onClick={() => setIsEditing(false)}>
-                Batal
-              </button>
-              <button type="submit" className="btn btn-primary" disabled={saving}>
-                {saving ? 'Menyimpan...' : 'Simpan'}
-              </button>
-            </div>
-          </form>
-        ) : (
-          <div className={styles.infoGrid}>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Nama Lengkap</span>
-              <span className={styles.infoValue}>{profile?.full_name || '-'}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Email</span>
-              <span className={styles.infoValue}>{user?.email}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Nomor Telepon</span>
-              <span className={styles.infoValue}>{profile?.phone_number || '-'}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Role</span>
-              <span className={styles.infoValue}>{profile?.role}</span>
-            </div>
-            <div className={styles.infoItem}>
-              <span className={styles.infoLabel}>Bergabung Sejak</span>
-              <span className={styles.infoValue}>
-                {profile?.created_at ? new Date(profile.created_at).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' }) : '-'}
-              </span>
-            </div>
+
+            <button
+              onClick={handleLogout}
+              className="btn btn-outline"
+              style={{ width: '100%', borderColor: '#f87171', color: '#b91c1c', marginTop: '1rem' }}
+            >
+              Keluar (Logout)
+            </button>
           </div>
-        )}
-      </div>
-
-      {/* Logout Section */}
-      <div className={styles.dangerCard}>
-        <div>
-          <h3 className={styles.dangerTitle}>Keluar dari Akun</h3>
-          <p className={styles.dangerDesc}>Anda akan keluar dari sesi ini dan diarahkan ke halaman utama.</p>
         </div>
-        <button className={styles.logoutBtn} onClick={handleLogout}>
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4M16 17l5-5-5-5M21 12H9" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
-          Keluar (Logout)
-        </button>
       </div>
     </div>
   );

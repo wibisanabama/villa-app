@@ -130,12 +130,16 @@ export default function ProfilePage() {
         <div className={styles.logo}>
           <Link href="/">Vilara</Link>
         </div>
-        <div className={styles.navLinks}>
-          <Link href="/search" className="btn btn-outline">Kembali ke Pencarian</Link>
-        </div>
       </header>
 
-      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '4rem 1.5rem', width: '100%', flex: 1 }}>
+      <main style={{ maxWidth: '800px', margin: '0 auto', padding: '2rem 1.5rem', width: '100%', flex: 1 }}>
+        <Link href="/search" className="btn btn-outline" style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', textDecoration: 'none' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12L12 19M5 12L12 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+          Kembali ke Pencarian
+        </Link>
+
         <h1 className={styles.heroTitle} style={{ fontSize: '2.5rem', marginBottom: '2rem', textAlign: 'center' }}>Info Akun</h1>
         
         {success && <div style={{ padding: '1rem', backgroundColor: '#dcfce7', color: '#166534', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', textAlign: 'center' }}>{success}</div>}

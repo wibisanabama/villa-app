@@ -1,8 +1,11 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin } from '../config/supabase.js';
 
 /**
  * Middleware untuk memverifikasi JWT token dari Supabase.
  * Token harus dikirimkan di header Authorization: Bearer <token>
+ * 
+ * PENTING: Menggunakan supabaseAdmin (service role) agar query ke user_profiles
+ * tidak terblokir oleh RLS. Ini adalah operasi server-side yang trusted.
  */
 export const requireAuth = async (req, res, next) => {
   try {
@@ -13,8 +16,8 @@ export const requireAuth = async (req, res, next) => {
 
     const token = authHeader.split(' ')[1];
     
-    // Verifikasi token menggunakan Supabase Auth
-    const { data: { user }, error } = await supabase.auth.getUser(token);
+    // Verifikasi token menggunakan Supabase Auth (admin bypasses RLS)
+    const { data: { user }, error } = await supabaseAdmin.auth.getUser(token);
 
     if (error || !user) {
       return res.status(401).json({ message: 'Unauthorized: Invalid token', error: error?.message });
@@ -24,7 +27,8 @@ export const requireAuth = async (req, res, next) => {
     req.user = user;
     
     // Ambil user role dari tabel user_profiles untuk keperluan RBAC (Role-Based Access Control)
-    const { data: profile, error: profileError } = await supabase
+    // Menggunakan supabaseAdmin agar tidak terblokir RLS
+    const { data: profile, error: profileError } = await supabaseAdmin
       .from('user_profiles')
       .select('role')
       .eq('id', user.id)
@@ -39,7 +43,7 @@ export const requireAuth = async (req, res, next) => {
        const emailName = user.email ? user.email.split('@')[0] : 'User';
 
        // Fire and forget insert
-       await supabase.from('user_profiles').insert([
+       await supabaseAdmin.from('user_profiles').insert([
          {
            id: user.id,
            role: 'GUEST',

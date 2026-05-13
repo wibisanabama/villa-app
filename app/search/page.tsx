@@ -152,9 +152,9 @@ export default function SearchPage() {
           Jelajahi koleksi properti terbaik yang tersedia untuk tanggal pilihan Anda.
         </p>
 
-        <div style={{ width: '100%', maxWidth: '800px', backgroundColor: 'var(--surface)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', marginBottom: '3rem', border: '1px solid var(--border)' }}>
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
-            <div style={{ flex: 1, minWidth: '200px' }}>
+        <div style={{ width: '100%', maxWidth: '900px', backgroundColor: 'var(--surface)', padding: '1.5rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', marginBottom: '3rem', border: '1px solid var(--border)' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr 1fr auto', gap: '1rem', alignItems: 'end' }}>
+            <div>
               <label className="label">Lokasi / Nama Villa</label>
               <input 
                 type="text" 
@@ -164,7 +164,7 @@ export default function SearchPage() {
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div style={{ flex: 1, minWidth: '150px' }}>
+            <div>
               <label className="label">Check-in</label>
               <input 
                 type="date" 
@@ -173,7 +173,7 @@ export default function SearchPage() {
                 onChange={(e) => setCheckIn(e.target.value)}
               />
             </div>
-            <div style={{ flex: 1, minWidth: '150px' }}>
+            <div>
               <label className="label">Check-out</label>
               <input 
                 type="date" 
@@ -182,10 +182,10 @@ export default function SearchPage() {
                 onChange={(e) => setCheckOut(e.target.value)}
               />
             </div>
-            <div style={{ display: 'flex', alignItems: 'flex-end', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button 
                 className="btn btn-primary" 
-                style={{ padding: '0.625rem 2rem' }}
+                style={{ padding: '0.625rem 1.5rem', whiteSpace: 'nowrap' }}
                 onClick={handleSearch}
                 disabled={isSearching}
               >
@@ -193,7 +193,7 @@ export default function SearchPage() {
               </button>
               <button 
                 className="btn btn-outline" 
-                style={{ padding: '0.625rem 1.5rem' }}
+                style={{ padding: '0.625rem 1rem' }}
                 onClick={handleReset}
                 disabled={isSearching}
               >

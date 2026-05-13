@@ -81,19 +81,6 @@ export default function DashboardLayout({
             Pemesanan
           </Link>
         </nav>
-
-        {/* User section at bottom of sidebar */}
-        <Link
-          href="/dashboard/profile"
-          className={`${styles.sidebarUser} ${pathname.includes('/profile') ? styles.sidebarUserActive : ''}`}
-        >
-          <div className={styles.avatar}>{displayName[0].toUpperCase()}</div>
-          <div className={styles.sidebarUserInfo}>
-            <div className={styles.userName}>{displayName}</div>
-            <div className={styles.userRole}>Owner · Lihat Profil</div>
-          </div>
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0, opacity: 0.5 }}><path d="M9 18l6-6-6-6"/></svg>
-        </Link>
       </aside>
       
       <main className={styles.mainContent}>
@@ -106,6 +93,19 @@ export default function DashboardLayout({
               {pathname.includes('/bookings') && 'Pemesanan'}
               {pathname.includes('/profile') && 'Profil Saya'}
             </h2>
+          </div>
+          <div className={styles.topbarRight}>
+            <Link
+              href="/dashboard/profile"
+              className={`${styles.userProfile} ${pathname.includes('/profile') ? styles.userProfileActive : ''}`}
+              style={{ textDecoration: 'none' }}
+            >
+              <div className={styles.avatar}>{displayName[0].toUpperCase()}</div>
+              <div>
+                <div className={styles.userName}>{displayName}</div>
+                <div className={styles.userRole}>Owner</div>
+              </div>
+            </Link>
           </div>
         </header>
         

@@ -55,32 +55,6 @@
   color: var(--primary);
 }
 
-/* Sidebar bottom user card */
-.sidebarUser {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  padding: 1rem 1.25rem;
-  border-top: 1px solid var(--border);
-  cursor: pointer;
-  transition: var(--transition);
-  text-decoration: none;
-  color: var(--foreground);
-}
-
-.sidebarUser:hover {
-  background-color: var(--background);
-}
-
-.sidebarUserActive {
-  background-color: rgba(79, 70, 229, 0.05);
-}
-
-.sidebarUserInfo {
-  flex: 1;
-  overflow: hidden;
-}
-
 .mainContent {
   flex: 1;
   display: flex;
@@ -113,6 +87,18 @@
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.userProfile:hover {
+  background-color: var(--background);
+}
+
+.userProfileActive {
+  background-color: var(--background);
 }
 
 .avatar {

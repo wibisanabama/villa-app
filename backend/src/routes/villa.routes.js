@@ -21,31 +21,31 @@ const upload = multer({
 });
 
 // ==========================================
-// PUBLIC ROUTES
+// PUBLIC ROUTES (Tidak butuh login)
 // ==========================================
 router.get('/', getAllVillas);
+
+// PENTING: Route statis HARUS sebelum route dinamis /:id
+// Agar Express tidak salah mencocokkan "owner" sebagai ID villa.
+// GET /:id juga PUBLIC agar guest bisa melihat detail villa.
+router.get('/owner/me', requireAuth, requireRole(['OWNER', 'SUPER_ADMIN']), getMyVillas);
+router.get('/:id', getVillaById);
 
 // ==========================================
 // PROTECTED ROUTES (Membutuhkan Login)
 // ==========================================
-router.use(requireAuth);
-
-// PENTING: Route statis HARUS didaftarkan SEBELUM route dinamis /:id
-// Agar Express tidak salah mencocokkan "owner" sebagai ID villa.
-router.get('/owner/me', requireRole(['OWNER', 'SUPER_ADMIN']), getMyVillas);
 
 // GUEST juga boleh create villa (ini adalah alur "Daftar Sebagai Owner")
 // Backend akan otomatis upgrade role dari GUEST -> OWNER setelah villa dibuat.
-router.post('/', requireRole(['OWNER', 'SUPER_ADMIN', 'GUEST']), createVilla);
+router.post('/', requireAuth, requireRole(['OWNER', 'SUPER_ADMIN', 'GUEST']), createVilla);
 
-// Route dinamis dengan ID (harus di bawah route statis seperti /owner/me)
-router.get('/:id', getVillaById);
-router.put('/:id', requireRole(['OWNER', 'SUPER_ADMIN']), updateVilla);
-router.delete('/:id', requireRole(['OWNER', 'SUPER_ADMIN']), deleteVilla);
+router.put('/:id', requireAuth, requireRole(['OWNER', 'SUPER_ADMIN']), updateVilla);
+router.delete('/:id', requireAuth, requireRole(['OWNER', 'SUPER_ADMIN']), deleteVilla);
 
 // Endpoint upload gambar (menggunakan multer array 'images')
 router.post(
   '/:id/images',
+  requireAuth,
   requireRole(['OWNER', 'SUPER_ADMIN']),
   upload.array('images', 3),
   uploadVillaImage

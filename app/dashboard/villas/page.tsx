@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { fetchWithAuth } from '../../../lib/api';
 import styles from './page.module.css';
 
@@ -26,6 +27,11 @@ export default function VillasPage() {
   const [imageFile2, setImageFile2] = useState<File | null>(null);
   const [imageFile3, setImageFile3] = useState<File | null>(null);
 
+  // Subscription limit state
+  const [canAddVilla, setCanAddVilla] = useState(true);
+  const [maxVillas, setMaxVillas] = useState(1);
+  const [currentPlanName, setCurrentPlanName] = useState('Starter');
+
   const loadVillas = async () => {
     setLoading(true);
     try {
@@ -41,6 +47,12 @@ export default function VillasPage() {
 
   useEffect(() => {
     loadVillas();
+    // Load subscription limits
+    fetchWithAuth('/subscriptions/me').then(res => {
+      setCanAddVilla(res.can_add_villa);
+      setMaxVillas(res.max_villas);
+      setCurrentPlanName(res.subscription?.name || 'Starter');
+    }).catch(() => {});
   }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -143,10 +155,38 @@ export default function VillasPage() {
     <div>
       <div className={styles.header}>
         <h2 className={styles.title}>Manajemen Properti</h2>
-        <button className="btn btn-primary" onClick={handleOpenAddModal}>
-          + Tambah Villa Baru
-        </button>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
+            {villas.length} / {maxVillas === -1 ? '∞' : maxVillas} villa
+          </span>
+          <button
+            className="btn btn-primary"
+            onClick={handleOpenAddModal}
+            disabled={!canAddVilla}
+            style={!canAddVilla ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
+          >
+            + Tambah Villa Baru
+          </button>
+        </div>
       </div>
+
+      {!canAddVilla && (
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '1rem 1.5rem', backgroundColor: '#fef3c7', borderRadius: 'var(--radius-md)',
+          border: '1px solid #fcd34d', marginBottom: '1rem'
+        }}>
+          <div>
+            <strong style={{ color: '#92400e' }}>Batas villa tercapai!</strong>
+            <span style={{ color: '#92400e', marginLeft: '0.5rem', fontSize: '0.875rem' }}>
+              Paket {currentPlanName} hanya memperbolehkan {maxVillas} villa.
+            </span>
+          </div>
+          <Link href="/dashboard/subscription" className="btn btn-primary" style={{ textDecoration: 'none', whiteSpace: 'nowrap', padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
+            Upgrade Paket
+          </Link>
+        </div>
+      )}
 
       <div className={`card ${styles.tableContainer}`}>
         <table className={styles.table}>

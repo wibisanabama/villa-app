@@ -1,0 +1,266 @@
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem;
+  color: var(--text-secondary);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Current plan banner */
+.currentPlan {
+  background: linear-gradient(135deg, #4f46e5 0%, #6366f1 50%, #818cf8 100%);
+  border-radius: var(--radius-lg);
+  padding: 1.75rem 2rem;
+  color: white;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 2rem;
+}
+
+.currentTitle {
+  font-size: 0.875rem;
+  font-weight: 500;
+  opacity: 0.85;
+  margin-bottom: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.currentInfo {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.planName {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.dot {
+  opacity: 0.5;
+}
+
+.villaUsage {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.progressWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  min-width: 180px;
+}
+
+.progressBar {
+  width: 100%;
+  height: 8px;
+  border-radius: 999px;
+  background: rgba(255,255,255,0.25);
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  border-radius: 999px;
+  background: white;
+  transition: width 0.5s ease;
+}
+
+.progressText {
+  font-size: 0.75rem;
+  opacity: 0.8;
+}
+
+/* Plans grid */
+.plansGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1.5rem;
+}
+
+.planCard {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.planCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0,0,0,0.08);
+}
+
+.popularCard {
+  border-color: var(--primary);
+  border-width: 2px;
+  box-shadow: 0 4px 16px rgba(79, 70, 229, 0.15);
+}
+
+.activeCard {
+  background: #f0f0ff;
+}
+
+.popularBadge {
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--primary);
+  color: white;
+  padding: 0.25rem 1rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.currentBadge {
+  position: absolute;
+  top: -12px;
+  right: 1rem;
+  background: #10b981;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.planTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.5rem;
+}
+
+.planDesc {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  line-height: 1.5;
+}
+
+.priceSection {
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: baseline;
+  gap: 0.25rem;
+}
+
+.priceFree {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.priceAmount {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.pricePeriod {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.villaLimit {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--background);
+  border-radius: var(--radius-md);
+  margin-bottom: 1.25rem;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.featureList {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 1.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  flex: 1;
+}
+
+.featureItem {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+/* Buttons */
+.planBtn {
+  width: 100%;
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.planBtnDefault {
+  background: var(--background);
+  color: var(--foreground);
+  border: 1px solid var(--border);
+}
+
+.planBtnDefault:hover:not(:disabled) {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.planBtnPopular {
+  background: var(--primary);
+  color: white;
+}
+
+.planBtnPopular:hover:not(:disabled) {
+  background: #4338ca;
+}
+
+.planBtnCurrent {
+  background: #e0e7ff;
+  color: var(--primary);
+  cursor: default;
+}
+
+.planBtn:disabled {
+  opacity: 0.7;
+}
+
+@media (max-width: 900px) {
+  .plansGrid {
+    grid-template-columns: 1fr;
+  }
+  .currentPlan {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .progressWrapper {
+    width: 100%;
+    align-items: flex-start;
+  }
+}

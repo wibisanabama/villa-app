@@ -12,6 +12,7 @@ import bookingRoutes from './routes/booking.routes.js';
 import analyticsRoutes from './routes/analytics.routes.js';
 import paymentRoutes from './routes/payment.routes.js';
 import staffRoutes from './routes/staff.routes.js';
+import subscriptionRoutes from './routes/subscription.routes.js';
 
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/staff', staffRoutes);
+app.use('/api/subscriptions', subscriptionRoutes);
 
 app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', message: 'Backend is running!' });

@@ -67,6 +67,32 @@ export const createVilla = async (req, res) => {
     const ownerId = req.user.id;
     const { name, description, location, price_per_night, capacity, facilities, is_active } = req.body;
 
+    // --- Subscription limit check ---
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('role, subscription_id, subscriptions(max_villas)')
+      .eq('id', ownerId)
+      .single();
+
+    const maxVillas = profile?.subscriptions?.max_villas ?? 1;
+
+    if (maxVillas !== -1) {
+      const { count } = await supabaseAdmin
+        .from('villas')
+        .select('id', { count: 'exact', head: true })
+        .eq('owner_id', ownerId);
+
+      if ((count || 0) >= maxVillas) {
+        return res.status(403).json({
+          message: `Batas villa untuk paket Anda telah tercapai (${maxVillas} villa). Upgrade paket untuk menambah lebih banyak villa.`,
+          code: 'VILLA_LIMIT_REACHED',
+          current: count,
+          max: maxVillas
+        });
+      }
+    }
+    // --- End subscription limit check ---
+
     const { data, error } = await supabaseAdmin
       .from('villas')
       .insert([
@@ -87,17 +113,20 @@ export const createVilla = async (req, res) => {
 
     if (error) throw error;
 
-    // Check if user is a GUEST and upgrade to OWNER
-    const { data: profile } = await supabaseAdmin
-      .from('user_profiles')
-      .select('role')
-      .eq('id', ownerId)
-      .single();
-
+    // Auto-assign starter plan and upgrade role if still GUEST
     if (profile && profile.role === 'GUEST') {
+      const updates = { role: 'OWNER' };
+      if (!profile.subscription_id) {
+        const { data: starterPlan } = await supabaseAdmin
+          .from('subscriptions')
+          .select('id')
+          .eq('slug', 'starter')
+          .single();
+        if (starterPlan) updates.subscription_id = starterPlan.id;
+      }
       await supabaseAdmin
         .from('user_profiles')
-        .update({ role: 'OWNER' })
+        .update(updates)
         .eq('id', ownerId);
     }
 

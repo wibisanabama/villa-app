@@ -29,17 +29,19 @@
   padding: 1.5rem 1rem;
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.25rem;
   overflow-y: auto;
 }
 
 .navItem {
   display: flex;
   align-items: center;
+  gap: 0.75rem;
   padding: 0.75rem 1rem;
   border-radius: var(--radius-md);
   color: var(--text-secondary);
   font-weight: 500;
+  font-size: 0.9rem;
   transition: var(--transition);
 }
 
@@ -51,6 +53,32 @@
 .navItemActive {
   background-color: rgba(79, 70, 229, 0.1);
   color: var(--primary);
+}
+
+/* Sidebar bottom user card */
+.sidebarUser {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-top: 1px solid var(--border);
+  cursor: pointer;
+  transition: var(--transition);
+  text-decoration: none;
+  color: var(--foreground);
+}
+
+.sidebarUser:hover {
+  background-color: var(--background);
+}
+
+.sidebarUserActive {
+  background-color: rgba(79, 70, 229, 0.05);
+}
+
+.sidebarUserInfo {
+  flex: 1;
+  overflow: hidden;
 }
 
 .mainContent {
@@ -98,17 +126,24 @@
   justify-content: center;
   font-weight: 600;
   font-size: 0.875rem;
+  flex-shrink: 0;
 }
 
 .userName {
   font-size: 0.875rem;
-  font-weight: 500;
+  font-weight: 600;
   color: var(--foreground);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .userRole {
-  font-size: 0.75rem;
+  font-size: 0.7rem;
   color: var(--text-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .contentArea {

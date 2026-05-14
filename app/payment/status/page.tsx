@@ -1,105 +1,199 @@
 'use client';
 
 import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { fetchWithAuth } from '../../../lib/api';
-import styles from '../../search/search.module.css';
+import styles from './status.module.css';
+
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
 function PaymentStatusContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const bookingId = searchParams.get('booking_id');
   const type = searchParams.get('type');
-  const plan = searchParams.get('plan');
+  const planSlug = searchParams.get('plan');
 
   const [loading, setLoading] = useState(true);
-  const [statusData, setStatusData] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [booking, setBooking] = useState<any>(null);
+  const [transaction, setTransaction] = useState<any>(null);
+  const [isPaid, setIsPaid] = useState(false);
+  const [paymentLink, setPaymentLink] = useState<string | null>(null);
+
+  // Subscription
+  const [subSuccess, setSubSuccess] = useState(false);
 
   useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        if (bookingId) {
-          const res = await fetchWithAuth(`/payments/status/${bookingId}`);
-          setStatusData(res);
-        } else if (type === 'subscription') {
-          // Placeholder for subscription check if needed, 
-          // or just show success if returning from Mayar assuming success.
-          // In a real app we'd have a specific endpoint to check subscription status.
-          setStatusData({ is_subscription: true, plan });
-        } else {
-          setError('Invalid parameters');
+    // --- Subscription payment return ---
+    if (type === 'subscription') {
+      const checkSub = async () => {
+        try {
+          const res = await fetchWithAuth('/subscriptions/me');
+          if (res.subscription?.slug === planSlug) {
+            setSubSuccess(true);
+          }
+        } catch { /* ignore */ } finally {
+          setLoading(false);
         }
-      } catch (err: any) {
-        setError(err.message || 'Gagal mengecek status pembayaran');
-      } finally {
+      };
+      checkSub();
+      const interval = setInterval(async () => {
+        try {
+          const res = await fetchWithAuth('/subscriptions/me');
+          if (res.subscription?.slug === planSlug) {
+            setSubSuccess(true);
+            clearInterval(interval);
+          }
+        } catch { /* ignore */ }
+      }, 3000);
+      return () => clearInterval(interval);
+    }
+
+    // --- Booking payment return ---
+    if (!bookingId) { setLoading(false); return; }
+
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/payments/status/${bookingId}`);
+        const data = await res.json();
+        setBooking(data.booking);
+        setTransaction(data.transaction);
+        setIsPaid(data.is_paid);
+        setPaymentLink(data.payment_link);
+      } catch { /* ignore */ } finally {
         setLoading(false);
       }
     };
-    checkStatus();
-  }, [bookingId, type, plan]);
+
+    fetchStatus();
+    const interval = setInterval(async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/payments/status/${bookingId}`);
+        const data = await res.json();
+        setBooking(data.booking);
+        setTransaction(data.transaction);
+        setIsPaid(data.is_paid);
+        setPaymentLink(data.payment_link);
+        if (data.is_paid) clearInterval(interval);
+      } catch { /* ignore */ }
+    }, 3000);
+
+    return () => clearInterval(interval);
+  }, [bookingId, type, planSlug]);
+
+  const formatPrice = (price: number) =>
+    new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(price);
+
+  const formatDate = (d: string) =>
+    new Date(d).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric' });
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <p>Mengecek status pembayaran...</p>
+      <div className={styles.card}>
+        <div className={styles.spinner} />
+        <p className={styles.loadingText}>Memeriksa status pembayaran...</p>
       </div>
     );
   }
 
-  if (error) {
+  // --- Subscription result ---
+  if (type === 'subscription') {
     return (
-      <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-        <h1 style={{ fontSize: '2rem', color: '#dc2626', marginBottom: '1rem' }}>Terjadi Kesalahan</h1>
-        <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>{error}</p>
-        <Link href="/search" className="btn btn-primary">Kembali ke Beranda</Link>
+      <div className={styles.card}>
+        {subSuccess ? (
+          <>
+            <div className={styles.iconSuccess}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
+            </div>
+            <h1 className={styles.title}>Upgrade Berhasil!</h1>
+            <p className={styles.subtitle}>Paket langganan Anda telah berhasil diupgrade ke <strong>{planSlug?.replace(/^\w/, c => c.toUpperCase())}</strong>.</p>
+            <Link href="/dashboard/subscription" className={styles.btnPrimary}>Kembali ke Dashboard</Link>
+          </>
+        ) : (
+          <>
+            <div className={styles.iconPending}>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
+            </div>
+            <h1 className={styles.title}>Menunggu Pembayaran</h1>
+            <p className={styles.subtitle}>Pembayaran Anda sedang diproses. Halaman ini akan otomatis diperbarui setelah pembayaran dikonfirmasi.</p>
+            <div className={styles.pollingRow}>
+              <span className={styles.pollingDot} />
+              <span>Menunggu konfirmasi...</span>
+            </div>
+            <Link href="/dashboard/subscription" className={styles.btnOutline}>Kembali ke Dashboard</Link>
+          </>
+        )}
       </div>
     );
   }
 
-  const isPaid = statusData?.is_paid || statusData?.is_subscription;
+  // --- No booking ---
+  if (!booking) {
+    return (
+      <div className={styles.card}>
+        <div className={styles.iconError}>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" /></svg>
+        </div>
+        <h1 className={styles.title}>Pesanan Tidak Ditemukan</h1>
+        <p className={styles.subtitle}>Data pesanan yang Anda cari tidak tersedia.</p>
+        <Link href="/search" className={styles.btnPrimary}>Cari Villa</Link>
+      </div>
+    );
+  }
 
+  // --- Booking payment result ---
   return (
-    <div style={{ maxWidth: '600px', margin: '4rem auto', backgroundColor: 'var(--surface)', padding: '2rem', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow-md)', textAlign: 'center', border: '1px solid var(--border)' }}>
+    <div className={styles.card}>
       {isPaid ? (
         <>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#dcfce7', color: '#166534', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className={styles.iconSuccess}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
           </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--foreground)' }}>Pembayaran Berhasil!</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-            {statusData?.is_subscription 
-              ? `Terima kasih! Langganan paket ${plan} Anda telah aktif.` 
-              : 'Terima kasih, pembayaran pesanan villa Anda telah kami terima.'}
-          </p>
+          <h1 className={styles.title}>Pembayaran Berhasil!</h1>
+          <p className={styles.subtitle}>Pesanan Anda telah dikonfirmasi. Selamat menikmati liburan!</p>
         </>
       ) : (
         <>
-          <div style={{ width: '80px', height: '80px', borderRadius: '50%', backgroundColor: '#fef9c3', color: '#b45309', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2"/>
-              <path d="M12 6V12L16 16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
+          <div className={styles.iconPending}>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>
           </div>
-          <h1 style={{ fontSize: '2rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--foreground)' }}>Menunggu Pembayaran</h1>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
-            Kami belum menerima konfirmasi pembayaran Anda. Jika Anda sudah membayar, silakan tunggu beberapa saat atau refresh halaman ini.
-          </p>
-          {statusData?.payment_link && (
-            <a href={statusData.payment_link} className="btn btn-primary" style={{ marginBottom: '1rem', display: 'inline-block' }}>
-              Lanjutkan Pembayaran
-            </a>
-          )}
+          <h1 className={styles.title}>Menunggu Pembayaran</h1>
+          <p className={styles.subtitle}>Selesaikan pembayaran untuk mengkonfirmasi pemesanan Anda.</p>
         </>
       )}
 
-      <div style={{ marginTop: '2rem' }}>
-        <Link href="/dashboard" className="btn btn-outline" style={{ width: '100%', maxWidth: '300px' }}>
-          Ke Dashboard
-        </Link>
+      {/* Details */}
+      <div className={styles.details}>
+        <div className={styles.row}><span>Villa</span><span>{booking.villas?.name || '-'}</span></div>
+        <div className={styles.row}><span>Lokasi</span><span>{booking.villas?.location || '-'}</span></div>
+        <div className={styles.row}><span>Check-in</span><span>{formatDate(booking.check_in_date)}</span></div>
+        <div className={styles.row}><span>Check-out</span><span>{formatDate(booking.check_out_date)}</span></div>
+        <div className={styles.row}><span>Tamu</span><span>{booking.guest_name}</span></div>
+        <div className={`${styles.row} ${styles.rowTotal}`}><span>Total</span><span>{formatPrice(booking.total_price)}</span></div>
+        <div className={styles.row}>
+          <span>Status</span>
+          <span className={`${styles.badge} ${isPaid ? styles.badgePaid : styles.badgePending}`}>
+            {isPaid ? 'Lunas' : 'Belum Dibayar'}
+          </span>
+        </div>
+      </div>
+
+      {/* Actions */}
+      <div className={styles.actions}>
+        {!isPaid && paymentLink && (
+          <a href={paymentLink} className={styles.btnPrimary}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" /></svg>
+            Bayar Sekarang
+          </a>
+        )}
+        {!isPaid && (
+          <div className={styles.pollingRow}>
+            <span className={styles.pollingDot} />
+            <span>Halaman ini otomatis update setelah pembayaran</span>
+          </div>
+        )}
+        <Link href="/profile" className={styles.btnOutline}>Lihat Riwayat Pesanan</Link>
+        <Link href="/search" className={styles.btnGhost}>Cari Villa Lainnya</Link>
       </div>
     </div>
   );
@@ -107,15 +201,20 @@ function PaymentStatusContent() {
 
 export default function PaymentStatusPage() {
   return (
-    <div className={styles.portalContainer}>
+    <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.logo}>
-          <Link href="/">Vilara</Link>
-        </div>
+        <Link href="/" className={styles.logo}>Vilara</Link>
       </header>
-      <Suspense fallback={<div style={{ textAlign: 'center', padding: '4rem' }}>Memuat...</div>}>
-        <PaymentStatusContent />
-      </Suspense>
+      <main className={styles.main}>
+        <Suspense fallback={
+          <div className={styles.card}>
+            <div className={styles.spinner} />
+            <p className={styles.loadingText}>Memuat...</p>
+          </div>
+        }>
+          <PaymentStatusContent />
+        </Suspense>
+      </main>
     </div>
   );
 }

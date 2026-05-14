@@ -22,6 +22,11 @@ export default function ProfilePage() {
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
+  // Bookings State
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [bookingsLoading, setBookingsLoading] = useState(true);
+  const [payingBookingId, setPayingBookingId] = useState<string | null>(null);
+
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -53,6 +58,36 @@ export default function ProfilePage() {
 
     fetchProfile();
   }, [router]);
+
+  // Load bookings
+  useEffect(() => {
+    const loadBookings = async () => {
+      try {
+        const data = await fetchWithAuth('/bookings/my-bookings');
+        setBookings(Array.isArray(data) ? data : []);
+      } catch { /* ignore */ } finally {
+        setBookingsLoading(false);
+      }
+    };
+    if (user) loadBookings();
+  }, [user]);
+
+  const handlePay = async (bookingId: string) => {
+    setPayingBookingId(bookingId);
+    try {
+      const res = await fetchWithAuth('/payments/create-link', {
+        method: 'POST',
+        body: JSON.stringify({ booking_id: bookingId })
+      });
+      if (res.payment_link) {
+        window.location.href = res.payment_link;
+      }
+    } catch (err: any) {
+      alert(`Gagal membuat link pembayaran: ${err.message}`);
+    } finally {
+      setPayingBookingId(null);
+    }
+  };
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -254,14 +289,76 @@ export default function ProfilePage() {
                   </Link>
                 </div>
               )}
+            </div>
 
+            {/* Pesanan Saya */}
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: '2rem', marginTop: '2rem' }}>
+              <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '1rem' }}>Pesanan Saya</h3>
+              {bookingsLoading ? (
+                <p style={{ color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0' }}>Memuat pesanan...</p>
+              ) : bookings.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 0', color: 'var(--text-secondary)' }}>
+                  <p style={{ marginBottom: '1rem' }}>Anda belum memiliki pesanan.</p>
+                  <Link href="/search" className="btn btn-primary">Cari Villa</Link>
+                </div>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                  {bookings.map((b: any) => {
+                    const statusColors: Record<string, { bg: string; color: string; label: string }> = {
+                      PENDING: { bg: '#fef9c3', color: '#92400e', label: 'Menunggu Pembayaran' },
+                      CONFIRMED: { bg: '#dcfce7', color: '#166534', label: 'Dikonfirmasi' },
+                      CANCELLED: { bg: '#fee2e2', color: '#991b1b', label: 'Dibatalkan' },
+                      COMPLETED: { bg: '#e0e7ff', color: '#3730a3', label: 'Selesai' }
+                    };
+                    const st = statusColors[b.status] || statusColors.PENDING;
+
+                    return (
+                      <div key={b.id} style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '1rem 1.25rem', backgroundColor: 'var(--background)', border: '1px solid var(--border)',
+                        borderRadius: 'var(--radius-md)', gap: '1rem', flexWrap: 'wrap'
+                      }}>
+                        <div style={{ flex: 1, minWidth: '200px' }}>
+                          <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>{b.villas?.name || 'Villa'}</p>
+                          <p style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
+                            {new Date(b.check_in_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' })} — {new Date(b.check_out_date).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </p>
+                        </div>
+                        <div style={{ textAlign: 'right', display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                          <span style={{ fontWeight: 600 }}>
+                            {new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(b.total_price)}
+                          </span>
+                          <span style={{ padding: '0.2rem 0.6rem', borderRadius: '999px', fontSize: '0.7rem', fontWeight: 600, backgroundColor: st.bg, color: st.color }}>
+                            {st.label}
+                          </span>
+                          {b.status === 'PENDING' && (
+                            <button
+                              className="btn btn-primary"
+                              style={{ padding: '0.4rem 0.75rem', fontSize: '0.8rem', whiteSpace: 'nowrap' }}
+                              disabled={payingBookingId === b.id}
+                              onClick={() => handlePay(b.id)}
+                            >
+                              {payingBookingId === b.id ? 'Memproses...' : 'Bayar Sekarang'}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+            {/* Logout */}
+            <div style={{ paddingTop: '2rem', marginTop: '1rem' }}>
               <button 
                 onClick={handleLogout} 
                 className="btn btn-outline" 
-                style={{ width: '100%', borderColor: '#f87171', color: '#b91c1c', marginTop: '1rem' }}
+                style={{ width: '100%', borderColor: '#f87171', color: '#b91c1c' }}
               >
                 Keluar (Logout)
               </button>
+            </div>
             </div>
           </div>
         </div>

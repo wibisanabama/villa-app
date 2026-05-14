@@ -1,4 +1,6 @@
-import { supabase } from '../config/supabase.js';
+import { supabaseAdmin, supabase } from '../config/supabase.js';
+
+const client = supabaseAdmin || supabase;
 
 /**
  * Utilitas untuk mengecek ketersediaan tanggal
@@ -6,7 +8,7 @@ import { supabase } from '../config/supabase.js';
 const checkDateAvailability = async (villaId, checkInDate, checkOutDate) => {
   // Cek apakah ada booking yang statusnya tidak CANCELLED dan 
   // tanggal check-in/check-out-nya beririsan dengan permintaan baru
-  const { data, error } = await supabase
+  const { data, error } = await client
     .from('bookings')
     .select('id')
     .eq('villa_id', villaId)
@@ -69,7 +71,7 @@ export const createBooking = async (req, res) => {
     }
 
     // 2. Ambil harga per malam dari villa
-    const { data: villa, error: villaError } = await supabase
+    const { data: villa, error: villaError } = await client
       .from('villas')
       .select('price_per_night')
       .eq('id', villa_id)
@@ -92,7 +94,7 @@ export const createBooking = async (req, res) => {
     const totalPrice = nights * villa.price_per_night;
 
     // 4. Insert ke tabel bookings
-    const { data: booking, error: insertError } = await supabase
+    const { data: booking, error: insertError } = await client
       .from('bookings')
       .insert([
         {
@@ -128,7 +130,7 @@ export const getVillaBookings = async (req, res) => {
     const ownerId = req.user.id;
 
     // Verifikasi kepemilikan villa
-    const { data: villa, error: villaError } = await supabase
+    const { data: villa, error: villaError } = await client
       .from('villas')
       .select('owner_id')
       .eq('id', villaId)
@@ -143,7 +145,7 @@ export const getVillaBookings = async (req, res) => {
     }
 
     // Ambil daftar booking
-    const { data: bookings, error: bookingsError } = await supabase
+    const { data: bookings, error: bookingsError } = await client
       .from('bookings')
       .select('*')
       .eq('villa_id', villaId)
@@ -164,7 +166,7 @@ export const getMyBookings = async (req, res) => {
   try {
     const guestId = req.user.id;
 
-    const { data, error } = await supabase
+    const { data, error } = await client
       .from('bookings')
       .select('*, villas(name, location, images)')
       .eq('guest_id', guestId)
@@ -189,7 +191,7 @@ export const updateBookingStatus = async (req, res) => {
     const userRole = req.user.role;
 
     // Cek booking ada atau tidak
-    const { data: booking, error: getError } = await supabase
+    const { data: booking, error: getError } = await client
       .from('bookings')
       .select('*, villas(owner_id)')
       .eq('id', id)
@@ -214,7 +216,7 @@ export const updateBookingStatus = async (req, res) => {
         }
     }
 
-    const { data: updatedBooking, error: updateError } = await supabase
+    const { data: updatedBooking, error: updateError } = await client
       .from('bookings')
       .update({ status })
       .eq('id', id)

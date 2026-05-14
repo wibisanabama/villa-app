@@ -113,7 +113,7 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
     setBookingError(null);
 
     try {
-      // Create booking
+      // 1. Create booking
       const response = await fetchWithAuth('/bookings', {
         method: 'POST',
         body: JSON.stringify({
@@ -126,11 +126,33 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
         })
       });
 
+      const bookingId = response.booking?.id;
+
+      // 2. Generate payment link
+      if (bookingId) {
+        try {
+          const paymentRes = await fetchWithAuth('/payments/create-link', {
+            method: 'POST',
+            body: JSON.stringify({ booking_id: bookingId })
+          });
+
+          if (paymentRes.payment_link) {
+            setBookingSuccess(true);
+            // Redirect ke halaman pembayaran Mayar
+            setTimeout(() => {
+              window.location.href = paymentRes.payment_link;
+            }, 1500);
+            return;
+          }
+        } catch {
+          // Payment link gagal, redirect ke status page
+        }
+      }
+
       setBookingSuccess(true);
-      // Redirect ke profile setelah berhasil booking (bukan dashboard karena GUEST tidak punya akses)
       setTimeout(() => {
-        router.push('/profile');
-      }, 2000);
+        router.push(`/payment/status?booking_id=${bookingId}`);
+      }, 1500);
 
     } catch (err: any) {
       setBookingError(err.message || 'Terjadi kesalahan saat membuat pesanan.');
@@ -289,8 +311,8 @@ export default function VillaDetailPage({ params }: { params: Promise<{ id: stri
                       <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
                     </svg>
                   </div>
-                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Pesanan Berhasil!</h3>
-                  <p style={{ color: 'var(--text-secondary)' }}>Mengalihkan ke halaman riwayat pesanan...</p>
+                  <h3 style={{ fontSize: '1.25rem', fontWeight: 600, marginBottom: '0.5rem' }}>Pesanan Berhasil Dibuat!</h3>
+                  <p style={{ color: 'var(--text-secondary)' }}>Mengalihkan ke halaman pembayaran...</p>
                 </div>
               ) : (
                 <form onSubmit={handleBooking}>

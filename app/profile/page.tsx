@@ -359,7 +359,6 @@ export default function ProfilePage() {
                 Keluar (Logout)
               </button>
             </div>
-            </div>
           </div>
         </div>
       </main>

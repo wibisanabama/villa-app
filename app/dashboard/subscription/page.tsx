@@ -23,6 +23,10 @@ export default function SubscriptionPage() {
   const [loading, setLoading] = useState(true);
   const [upgrading, setUpgrading] = useState<string | null>(null);
 
+  // Modal state
+  const [confirmPlan, setConfirmPlan] = useState<Plan | null>(null);
+  const [resultMessage, setResultMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
   useEffect(() => {
     const load = async () => {
       try {
@@ -43,39 +47,38 @@ export default function SubscriptionPage() {
     load();
   }, []);
 
-  const handleUpgrade = async (slug: string) => {
+  const handleUpgrade = (slug: string) => {
     if (upgrading) return;
     const plan = plans.find(p => p.slug === slug);
     if (!plan) return;
+    setConfirmPlan(plan);
+  };
 
-    const confirm = window.confirm(
-      plan.price > 0
-        ? `Upgrade ke paket ${plan.name} dengan harga Rp ${plan.price.toLocaleString('id-ID')}/bulan?`
-        : `Beralih ke paket ${plan.name} (Gratis)?`
-    );
-    if (!confirm) return;
+  const processUpgrade = async () => {
+    if (!confirmPlan) return;
+    const planToUpgrade = confirmPlan;
+    setUpgrading(planToUpgrade.slug);
+    setConfirmPlan(null);
 
-    setUpgrading(slug);
     try {
       const res = await fetchWithAuth('/payments/subscription', {
         method: 'POST',
-        body: JSON.stringify({ plan_slug: slug })
+        body: JSON.stringify({ plan_slug: planToUpgrade.slug })
       });
 
       if (res.payment_link) {
-        // Arahkan ke Mayar Payment
         window.location.href = res.payment_link;
         return;
       }
 
-      // Jika plan gratis (tidak butuh bayar)
+      // Free plan — langsung berhasil
       const myRes = await fetchWithAuth('/subscriptions/me');
       setCurrentSub(myRes.subscription);
       setVillaCount(myRes.villa_count);
       setMaxVillas(myRes.max_villas);
-      alert(`Berhasil beralih ke paket ${plan.name}!`);
+      setResultMessage({ type: 'success', text: `Berhasil beralih ke paket ${planToUpgrade.name}!` });
     } catch (err: any) {
-      alert(`Gagal: ${err.message}`);
+      setResultMessage({ type: 'error', text: err.message || 'Terjadi kesalahan' });
     } finally {
       setUpgrading(null);
     }
@@ -87,6 +90,14 @@ export default function SubscriptionPage() {
 
   return (
     <div className={styles.container}>
+      {/* Result toast */}
+      {resultMessage && (
+        <div className={`${styles.toast} ${resultMessage.type === 'success' ? styles.toastSuccess : styles.toastError}`}>
+          <span>{resultMessage.text}</span>
+          <button className={styles.toastClose} onClick={() => setResultMessage(null)}>&times;</button>
+        </div>
+      )}
+
       {/* Current plan banner */}
       <div className={styles.currentPlan}>
         <div>
@@ -99,7 +110,6 @@ export default function SubscriptionPage() {
             </span>
           </div>
         </div>
-        {/* Progress bar */}
         {maxVillas !== -1 && (
           <div className={styles.progressWrapper}>
             <div className={styles.progressBar}>
@@ -172,6 +182,51 @@ export default function SubscriptionPage() {
           );
         })}
       </div>
+
+      {/* Confirmation Modal */}
+      {confirmPlan && (
+        <div className={styles.modalOverlay} onClick={() => setConfirmPlan(null)}>
+          <div className={styles.modal} onClick={e => e.stopPropagation()}>
+            <button className={styles.modalClose} onClick={() => setConfirmPlan(null)}>&times;</button>
+
+            <div className={styles.modalIcon}>
+              {confirmPlan.price > 0 ? (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+              ) : (
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              )}
+            </div>
+
+            <h3 className={styles.modalTitle}>
+              {confirmPlan.price > 0 ? 'Konfirmasi Upgrade' : 'Konfirmasi Perubahan'}
+            </h3>
+
+            <div className={styles.modalPlanInfo}>
+              <span className={styles.modalPlanName}>{confirmPlan.name}</span>
+              {confirmPlan.price > 0 ? (
+                <span className={styles.modalPlanPrice}>Rp {confirmPlan.price.toLocaleString('id-ID')}/bulan</span>
+              ) : (
+                <span className={styles.modalPlanPrice}>Gratis</span>
+              )}
+            </div>
+
+            <p className={styles.modalDesc}>
+              {confirmPlan.price > 0
+                ? `Anda akan diarahkan ke halaman pembayaran untuk mengaktifkan paket ${confirmPlan.name}. Setelah pembayaran berhasil, paket akan langsung aktif.`
+                : `Anda akan beralih ke paket ${confirmPlan.name}. Perubahan ini berlaku segera.`}
+            </p>
+
+            <div className={styles.modalActions}>
+              <button className={styles.modalBtnPrimary} onClick={processUpgrade}>
+                {confirmPlan.price > 0 ? 'Lanjutkan Pembayaran' : 'Ya, Beralih'}
+              </button>
+              <button className={styles.modalBtnCancel} onClick={() => setConfirmPlan(null)}>
+                Batal
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -111,7 +111,3 @@ Gunakan environment sandbox sampai checkout, verifikasi webhook, rekonsiliasi in
 - `FRONTEND_URL` dan `ALLOWED_ORIGINS` harus berisi domain frontend yang sebenarnya.
 
 Deployment dianggap berhasil hanya setelah migration staging, Google OAuth, Mayar sandbox, webhook, dan seluruh smoke test selesai tanpa error.
-
-## Dokumentasi Implementasi
-
-Rencana, acceptance criteria, dan pekerjaan yang belum diverifikasi dicatat di `implementation_plan.md`.

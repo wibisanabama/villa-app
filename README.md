@@ -1,44 +1,108 @@
 # Vilara
 
-Marketplace dan ruang operasional villa untuk tamu, pemilik, staf, dan super-admin. Frontend menggunakan Next.js 16; REST API menggunakan Express TypeScript; autentikasi, PostgreSQL, dan storage menggunakan Supabase; pembayaran menggunakan Mayar.
+Vilara adalah aplikasi pemesanan dan pengelolaan villa untuk tamu, pemilik, staf, dan super-admin.
 
-## Menjalankan lokal
+## Status
 
-1. Salin `.env.example` ke `.env.local` dan `backend/.env.example` ke `backend/.env`.
-2. Jalankan `pnpm install`.
-3. Reset Supabase development lalu terapkan `supabase/migrations` dan `supabase/seed.sql`.
-4. Jalankan API dengan `pnpm dev:api`, lalu frontend dengan `pnpm dev`.
+Proyek sedang dalam tahap MVP dan belum siap digunakan di production. Build dan pengujian lokal tersedia, tetapi integrasi Supabase, Google OAuth, Mayar sandbox, serta deployment staging masih harus diverifikasi menggunakan kredensial dan layanan nyata.
 
-Quality gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, dan `pnpm build:all`.
+## Arsitektur
 
-## Database dan reset
+| Komponen | Teknologi |
+| --- | --- |
+| Frontend | Next.js 16, React 19, TypeScript |
+| REST API | Express 5, TypeScript |
+| Auth, database, storage | Supabase |
+| Pembayaran | Mayar |
+| Validasi dan kontrak | Zod |
+| Unit dan API test | Vitest, Supertest |
+| End-to-end test | Playwright |
+| Package manager | pnpm workspace |
 
-Migration awal adalah destructive untuk database lama. Sebelum production:
+## Prasyarat
 
-1. Verifikasi Supabase project ID dan ambil backup database/storage.
-2. Uji reset pada project staging.
-3. Jalankan migration, lalu seed paket Starter, Professional, dan Enterprise.
-4. Pastikan Google OAuth redirect memuat `/auth/callback` untuk domain staging/production.
-5. Masukkan email admin awal ke `SUPER_ADMIN_EMAILS`.
+- Node.js 20
+- pnpm 10
+- Supabase project
+- Google OAuth credentials
+- Mayar sandbox credentials
 
-Jangan memasukkan service-role key atau Mayar API key ke environment frontend.
+## Instalasi
+
+```bash
+pnpm install
+```
+
+Salin dan isi file environment:
+
+```text
+.env.example         -> .env.local
+backend/.env.example -> backend/.env
+```
+
+Jangan memasukkan `SUPABASE_SERVICE_ROLE_KEY` atau `MAYAR_API_KEY` ke environment frontend.
+
+## Database
+
+Migration berada di `supabase/migrations` dan data awal berada di `supabase/seed.sql`.
+
+Sebelum menerapkan migration pada project yang sudah berisi data:
+
+1. Verifikasi Supabase project ID.
+2. Buat backup database dan storage.
+3. Terapkan migration pada staging.
+4. Jalankan seed.
+5. Verifikasi constraint booking, RLS, bucket storage, dan paket subscription.
+
+Migration awal dapat mengubah struktur database lama. Jangan menjalankannya pada production tanpa backup yang telah diuji.
+
+## Menjalankan Aplikasi
+
+Jalankan API:
+
+```bash
+pnpm dev:api
+```
+
+Jalankan frontend pada terminal terpisah:
+
+```bash
+pnpm dev
+```
+
+Frontend tersedia di `http://localhost:3000`. API tersedia di `http://localhost:5000/api/v1`.
+
+## Verifikasi
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build:all
+pnpm test:e2e
+```
+
+`pnpm test:e2e` saat ini hanya memverifikasi katalog publik pada viewport desktop dan mobile. Alur autentikasi, pembayaran, owner, staf, cancellation, dan admin masih memerlukan cakupan E2E tambahan.
 
 ## Mayar
 
-- Gunakan akun sandbox terlebih dahulu dan arahkan webhook ke `POST /api/v1/payments/webhooks/mayar`.
-- Invoice menyimpan referensi internal di `extraData`; webhook selalu diverifikasi ulang melalui detail invoice Mayar.
-- Payment review dan refund manual ditangani dari panel admin/owner.
-- Setelah smoke test sandbox lulus, ganti base URL dan API key di Railway tanpa mengubah frontend.
+Webhook Mayar harus diarahkan ke:
+
+```text
+POST /api/v1/payments/webhooks/mayar
+```
+
+Gunakan environment sandbox sampai checkout, verifikasi webhook, rekonsiliasi invoice, payment review, dan refund tracking telah lulus smoke test.
 
 ## Deployment
 
-- Vercel: hubungkan root repository dan isi seluruh `NEXT_PUBLIC_*`.
-- Railway: buat service dengan root directory `backend`, gunakan `backend/railway.json`, lalu isi environment dari contoh backend.
-- Tambahkan Railway scheduled service yang menjalankan `pnpm --filter @vilara/api job:maintenance` setiap lima menit.
-- `ALLOWED_ORIGINS` dan `FRONTEND_URL` harus memakai URL Vercel yang sebenarnya.
+- Frontend: Vercel menggunakan konfigurasi `vercel.json`.
+- API: Railway menggunakan konfigurasi `backend/railway.json`.
+- Maintenance job: jalankan `pnpm --filter @vilara/api job:maintenance` setiap lima menit.
+- `FRONTEND_URL` dan `ALLOWED_ORIGINS` harus berisi domain frontend yang sebenarnya.
 
-Rollback aplikasi dilakukan dengan redeploy commit sebelumnya. Migration database tidak diubah setelah diterapkan; buat migration kompensasi dan pulihkan backup hanya jika migration gagal secara material.
+Deployment dianggap berhasil hanya setelah migration staging, Google OAuth, Mayar sandbox, webhook, dan seluruh smoke test selesai tanpa error.
 
-## Status MVP
+## Dokumentasi Implementasi
 
-Tersedia: katalog dan booking terautentikasi, hold 30 menit, pembayaran Mayar, profil/riwayat tamu, studio owner, kalender booking, staf per villa, paket 30 hari dengan grace period, serta admin minimum. Fitur di luar MVP dicatat di `implementation_plan.md`.
+Rencana, acceptance criteria, dan pekerjaan yang belum diverifikasi dicatat di `implementation_plan.md`.

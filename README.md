@@ -19,6 +19,15 @@ Proyek sedang dalam tahap MVP dan belum siap digunakan di production. Build dan 
 | End-to-end test | Playwright |
 | Package manager | pnpm workspace |
 
+## Struktur Repository
+
+```text
+frontend/  Next.js, komponen UI, dan pengujian E2E
+backend/   Express API, kontrak bersama, migration, seed, dan pengujian API
+```
+
+Perintah workspace dan dokumentasi tetap berada di root repository.
+
 ## Prasyarat
 
 - Node.js 20
@@ -36,15 +45,15 @@ pnpm install
 Salin dan isi file environment:
 
 ```text
-.env.example         -> .env.local
-backend/.env.example -> backend/.env
+frontend/.env.example -> frontend/.env.local
+backend/.env.example  -> backend/.env
 ```
 
 Jangan memasukkan `SUPABASE_SERVICE_ROLE_KEY` atau `MAYAR_API_KEY` ke environment frontend.
 
 ## Database
 
-Migration berada di `supabase/migrations` dan data awal berada di `supabase/seed.sql`.
+Migration berada di `backend/supabase/migrations` dan data awal berada di `backend/supabase/seed.sql`.
 
 Sebelum menerapkan migration pada project yang sudah berisi data:
 
@@ -96,7 +105,7 @@ Gunakan environment sandbox sampai checkout, verifikasi webhook, rekonsiliasi in
 
 ## Deployment
 
-- Frontend: Vercel menggunakan konfigurasi `vercel.json`.
+- Frontend: Vercel menggunakan root directory `frontend` dan konfigurasi `frontend/vercel.json`.
 - API: Railway menggunakan konfigurasi `backend/railway.json`.
 - Maintenance job: jalankan `pnpm --filter @vilara/api job:maintenance` setiap lima menit.
 - `FRONTEND_URL` dan `ALLOWED_ORIGINS` harus berisi domain frontend yang sebenarnya.

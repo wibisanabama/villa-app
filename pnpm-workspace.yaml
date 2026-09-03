@@ -1,6 +1,7 @@
 packages:
+  - frontend
   - backend
-  - packages/*
+  - backend/contracts
 
 ignoredBuiltDependencies:
   - sharp

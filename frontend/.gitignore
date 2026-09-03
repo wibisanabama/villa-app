@@ -22,8 +22,6 @@ node_modules/
 
 # production
 /build
-/backend/dist
-/backend/coverage
 
 # misc
 .DS_Store

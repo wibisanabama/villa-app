@@ -4,12 +4,18 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:api": "pnpm --filter @vilara/api dev",
     "build": "next build",
+    "build:all": "pnpm --filter @vilara/contracts build && pnpm --filter @vilara/api build && next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit && pnpm --filter @vilara/api typecheck",
+    "test": "pnpm --filter @vilara/api test"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
+    "@supabase/ssr": "^0.7.0",
+    "@vilara/contracts": "workspace:*",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -22,6 +28,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.6",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "zod": "^3.25.76"
   }
 }

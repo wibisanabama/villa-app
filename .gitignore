@@ -19,6 +19,8 @@
 
 # production
 /build
+/backend/dist
+/backend/coverage
 
 # misc
 .DS_Store
@@ -32,6 +34,8 @@ yarn-error.log*
 
 # env files (can opt-in for committing if needed)
 .env*
+!.env.example
+!backend/.env.example
 
 # vercel
 .vercel
@@ -42,4 +46,3 @@ next-env.d.ts
 
 # planning
 implementation_plan.md
-

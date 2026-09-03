@@ -49,6 +49,14 @@ SaaS ini dirancang untuk membantu pemilik dan pengelola villa dalam mengelola pr
 
 ## 3. Pembagian Tugas (To-Do List)
 
+### Production MVP Recovery (2026)
+- [x] Migrasi workspace dan backend Express ke TypeScript strict.
+- [x] Kontrak domain/validasi bersama, response envelope, security middleware, dan test dasar.
+- [x] Migration serta seed Supabase untuk booking hold, subscription, staf, transaksi, dan admin.
+- [ ] Frontend Supabase SSR dan design system editorial responsif.
+- [ ] Alur tamu, owner, staf, dan super-admin terhubung ke API v1.
+- [ ] Test end-to-end, CI, dokumentasi operasional, serta konfigurasi Vercel/Railway.
+
 > [!IMPORTANT]
 > **Aturan Wajib Agen (Agent Rules):**
 > Setiap kali **satu fitur/tugas** selesai dikerjakan, Anda **WAJIB**:

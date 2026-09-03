@@ -3,13 +3,13 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "pnpm --filter @vilara/web dev",
-    "dev:api": "pnpm --filter @vilara/api dev",
-    "build": "pnpm --filter @vilara/web build",
-    "build:all": "pnpm --filter @vilara/contracts build && pnpm --filter @vilara/api build && pnpm --filter @vilara/web build",
-    "lint": "pnpm --filter @vilara/web lint",
-    "typecheck": "pnpm --filter @vilara/web typecheck && pnpm --filter @vilara/api typecheck",
-    "test": "pnpm --filter @vilara/api test",
-    "test:e2e": "pnpm --filter @vilara/web test:e2e"
+    "dev": "pnpm --dir frontend dev",
+    "dev:api": "pnpm --dir backend dev",
+    "build": "pnpm --dir frontend build",
+    "build:all": "pnpm --dir backend exec tsc -p contracts/tsconfig.json --noEmit && pnpm --dir backend build && pnpm --dir frontend build",
+    "lint": "pnpm --dir frontend lint",
+    "typecheck": "pnpm --dir frontend typecheck && pnpm --dir backend typecheck",
+    "test": "pnpm --dir backend test",
+    "test:e2e": "pnpm --dir frontend test:e2e"
   }
 }

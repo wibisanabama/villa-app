@@ -9,8 +9,8 @@
     "dev": "tsx watch src/index.ts",
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "vitest run"
-    ,"job:maintenance": "node dist/job.js"
+    "test": "vitest run",
+    "job:maintenance": "node dist/job.js"
   },
   "keywords": [],
   "author": "",
@@ -18,7 +18,7 @@
   "packageManager": "pnpm@10.33.3",
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
-    "@vilara/contracts": "workspace:*",
+    "@vilara/contracts": "file:./contracts",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
@@ -40,5 +40,10 @@
     "tsx": "^4.20.5",
     "typescript": "^5.9.2",
     "vitest": "^3.2.4"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
   }
 }

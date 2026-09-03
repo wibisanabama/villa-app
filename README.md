@@ -17,7 +17,7 @@ Proyek sedang dalam tahap MVP dan belum siap digunakan di production. Build dan 
 | Validasi dan kontrak | Zod |
 | Unit dan API test | Vitest, Supertest |
 | End-to-end test | Playwright |
-| Package manager | pnpm workspace |
+| Package manager | pnpm dengan instalasi terpisah |
 
 ## Struktur Repository
 
@@ -26,7 +26,7 @@ frontend/  Next.js, komponen UI, dan pengujian E2E
 backend/   Express API, kontrak bersama, migration, seed, dan pengujian API
 ```
 
-Perintah workspace dan dokumentasi tetap berada di root repository.
+Perintah wrapper dan dokumentasi tetap berada di root repository. Dependency frontend dan backend dikelola secara terpisah.
 
 ## Prasyarat
 
@@ -39,7 +39,8 @@ Perintah workspace dan dokumentasi tetap berada di root repository.
 ## Instalasi
 
 ```bash
-pnpm install
+pnpm --dir frontend install
+pnpm --dir backend install
 ```
 
 Salin dan isi file environment:
@@ -107,7 +108,7 @@ Gunakan environment sandbox sampai checkout, verifikasi webhook, rekonsiliasi in
 
 - Frontend: Vercel menggunakan root directory `frontend` dan konfigurasi `frontend/vercel.json`.
 - API: Railway menggunakan konfigurasi `backend/railway.json`.
-- Maintenance job: jalankan `pnpm --filter @vilara/api job:maintenance` setiap lima menit.
+- Maintenance job: jalankan `pnpm --dir backend job:maintenance` setiap lima menit.
 - `FRONTEND_URL` dan `ALLOWED_ORIGINS` harus berisi domain frontend yang sebenarnya.
 
 Deployment dianggap berhasil hanya setelah migration staging, Google OAuth, Mayar sandbox, webhook, dan seluruh smoke test selesai tanpa error.

@@ -13,7 +13,7 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",
     "@supabase/ssr": "^0.7.0",
-    "@vilara/contracts": "workspace:*",
+    "@vilara/contracts": "file:../backend/contracts",
     "next": "16.2.6",
     "react": "19.2.4",
     "react-dom": "19.2.4"
@@ -29,5 +29,11 @@
     "tailwindcss": "^4",
     "typescript": "^5",
     "zod": "^3.25.76"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }

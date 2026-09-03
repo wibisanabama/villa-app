@@ -26,7 +26,7 @@ frontend/  Next.js, komponen UI, dan pengujian E2E
 backend/   Express API, kontrak bersama, migration, seed, dan pengujian API
 ```
 
-Perintah wrapper dan dokumentasi tetap berada di root repository. Dependency frontend dan backend dikelola secara terpisah.
+Dependency dan perintah frontend serta backend dikelola secara terpisah.
 
 ## Prasyarat
 
@@ -71,13 +71,13 @@ Migration awal dapat mengubah struktur database lama. Jangan menjalankannya pada
 Jalankan API:
 
 ```bash
-pnpm dev:api
+pnpm --dir backend dev
 ```
 
 Jalankan frontend pada terminal terpisah:
 
 ```bash
-pnpm dev
+pnpm --dir frontend dev
 ```
 
 Frontend tersedia di `http://localhost:3000`. API tersedia di `http://localhost:5000/api/v1`.
@@ -85,14 +85,17 @@ Frontend tersedia di `http://localhost:3000`. API tersedia di `http://localhost:
 ## Verifikasi
 
 ```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm build:all
-pnpm test:e2e
+pnpm --dir frontend lint
+pnpm --dir frontend typecheck
+pnpm --dir backend typecheck
+pnpm --dir backend test
+pnpm --dir backend exec tsc -p contracts/tsconfig.json --noEmit
+pnpm --dir backend build
+pnpm --dir frontend build
+pnpm --dir frontend test:e2e
 ```
 
-`pnpm test:e2e` saat ini hanya memverifikasi katalog publik pada viewport desktop dan mobile. Alur autentikasi, pembayaran, owner, staf, cancellation, dan admin masih memerlukan cakupan E2E tambahan.
+`pnpm --dir frontend test:e2e` saat ini hanya memverifikasi katalog publik pada viewport desktop dan mobile. Alur autentikasi, pembayaran, owner, staf, cancellation, dan admin masih memerlukan cakupan E2E tambahan.
 
 ## Mayar
 

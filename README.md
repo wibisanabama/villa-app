@@ -1,32 +1,31 @@
 # Vilara
 
-Vilara adalah aplikasi pemesanan dan pengelolaan villa untuk tamu, pemilik, staf, dan super-admin.
+Aplikasi pemesanan dan pengelolaan villa untuk tamu, pemilik, staf, dan super-admin.
 
 ## Status
 
-Proyek sedang dalam tahap MVP dan belum siap digunakan di production. Build dan pengujian lokal tersedia, tetapi integrasi Supabase, Google OAuth, Mayar sandbox, serta deployment staging masih harus diverifikasi menggunakan kredensial dan layanan nyata.
+MVP dalam pengembangan. Build lokal tersedia. Supabase, Google OAuth, Mayar sandbox, dan deployment staging belum diverifikasi menggunakan layanan production-like.
 
-## Arsitektur
+## Teknologi
 
-| Komponen | Teknologi |
+| Bagian | Teknologi |
 | --- | --- |
 | Frontend | Next.js 16, React 19, TypeScript |
-| REST API | Express 5, TypeScript |
+| Backend | Express 5, TypeScript |
 | Auth, database, storage | Supabase |
 | Pembayaran | Mayar |
-| Validasi dan kontrak | Zod |
-| Unit dan API test | Vitest, Supertest |
-| End-to-end test | Playwright |
-| Package manager | pnpm dengan instalasi terpisah |
+| Validasi | Zod |
+| Pengujian | Vitest, Supertest, Playwright |
+| Package manager | pnpm |
 
-## Struktur Repository
+## Struktur
 
 ```text
-frontend/  Next.js, komponen UI, dan pengujian E2E
-backend/   Express API, kontrak bersama, migration, seed, dan pengujian API
+frontend/  Aplikasi Next.js dan pengujian E2E
+backend/   REST API, contracts, migration, seed, dan pengujian API
 ```
 
-Dependency dan perintah frontend serta backend dikelola secara terpisah.
+Frontend dan backend memiliki dependency serta lockfile terpisah.
 
 ## Prasyarat
 
@@ -43,75 +42,79 @@ pnpm --dir frontend install
 pnpm --dir backend install
 ```
 
-Salin dan isi file environment:
+Siapkan environment:
 
 ```text
 frontend/.env.example -> frontend/.env.local
 backend/.env.example  -> backend/.env
 ```
 
-Jangan memasukkan `SUPABASE_SERVICE_ROLE_KEY` atau `MAYAR_API_KEY` ke environment frontend.
+Jangan menempatkan service-role key atau Mayar API key di frontend.
 
-## Database
+## Menjalankan Lokal
 
-Migration berada di `backend/supabase/migrations` dan data awal berada di `backend/supabase/seed.sql`.
-
-Sebelum menerapkan migration pada project yang sudah berisi data:
-
-1. Verifikasi Supabase project ID.
-2. Buat backup database dan storage.
-3. Terapkan migration pada staging.
-4. Jalankan seed.
-5. Verifikasi constraint booking, RLS, bucket storage, dan paket subscription.
-
-Migration awal dapat mengubah struktur database lama. Jangan menjalankannya pada production tanpa backup yang telah diuji.
-
-## Menjalankan Aplikasi
-
-Jalankan API:
+Terminal pertama:
 
 ```bash
 pnpm --dir backend dev
 ```
 
-Jalankan frontend pada terminal terpisah:
+Terminal kedua:
 
 ```bash
 pnpm --dir frontend dev
 ```
 
-Frontend tersedia di `http://localhost:3000`. API tersedia di `http://localhost:5000/api/v1`.
+| Layanan | URL |
+| --- | --- |
+| Frontend | `http://localhost:3000` |
+| API | `http://localhost:5000/api/v1` |
+
+## Database
+
+- Migration: `backend/supabase/migrations`
+- Seed: `backend/supabase/seed.sql`
+- SQL tests: `backend/supabase/tests`
+
+Verifikasi Supabase project ID dan buat backup sebelum menjalankan migration pada database yang sudah berisi data.
 
 ## Verifikasi
+
+Frontend:
 
 ```bash
 pnpm --dir frontend lint
 pnpm --dir frontend typecheck
-pnpm --dir backend typecheck
-pnpm --dir backend test
-pnpm --dir backend exec tsc -p contracts/tsconfig.json --noEmit
-pnpm --dir backend build
 pnpm --dir frontend build
 pnpm --dir frontend test:e2e
 ```
 
-`pnpm --dir frontend test:e2e` saat ini hanya memverifikasi katalog publik pada viewport desktop dan mobile. Alur autentikasi, pembayaran, owner, staf, cancellation, dan admin masih memerlukan cakupan E2E tambahan.
+Backend:
 
-## Mayar
+```bash
+pnpm --dir backend typecheck
+pnpm --dir backend test
+pnpm --dir backend exec tsc -p contracts/tsconfig.json --noEmit
+pnpm --dir backend build
+```
 
-Webhook Mayar harus diarahkan ke:
+Pengujian E2E saat ini hanya mencakup katalog publik pada viewport desktop dan mobile.
+
+## Deployment
+
+| Layanan | Root directory | Konfigurasi |
+| --- | --- | --- |
+| Vercel | `frontend` | `frontend/vercel.json` |
+| Railway | `backend` | `backend/railway.json` |
+
+Webhook Mayar:
 
 ```text
 POST /api/v1/payments/webhooks/mayar
 ```
 
-Gunakan environment sandbox sampai checkout, verifikasi webhook, rekonsiliasi invoice, payment review, dan refund tracking telah lulus smoke test.
+Jalankan maintenance job setiap lima menit:
 
-## Deployment
-
-- Frontend: Vercel menggunakan root directory `frontend` dan konfigurasi `frontend/vercel.json`.
-- API: Railway menggunakan konfigurasi `backend/railway.json`.
-- Maintenance job: jalankan `pnpm --dir backend job:maintenance` setiap lima menit.
-- `FRONTEND_URL` dan `ALLOWED_ORIGINS` harus berisi domain frontend yang sebenarnya.
-
-Deployment dianggap berhasil hanya setelah migration staging, Google OAuth, Mayar sandbox, webhook, dan seluruh smoke test selesai tanpa error.
+```bash
+pnpm --dir backend job:maintenance
+```

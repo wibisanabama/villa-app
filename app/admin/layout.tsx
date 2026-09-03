@@ -1,0 +1,1 @@
+import type{ReactNode}from"react";import{AppShell}from"@/components/app-shell";import{RoleGate}from"@/components/role-gate";export default function Layout({children}:{children:ReactNode}){return <RoleGate role="admin"><AppShell mode="admin">{children}</AppShell></RoleGate>}

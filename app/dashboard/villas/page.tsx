@@ -1,282 +1,82 @@
-'use client';
+"use client";
 
-import { useEffect, useState } from 'react';
-import Link from 'next/link';
-import { fetchWithAuth } from '../../../lib/api';
-import styles from './page.module.css';
+import Image from "next/image";
+import { useState, type FormEvent } from "react";
+import type { Villa } from "@vilara/contracts";
+import { api } from "@/lib/api";
+import { Dialog, Empty, ErrorNotice, StatusBadge } from "@/components/client-ui";
+import { useApiResource } from "@/components/use-api-resource";
+
+const rupiah = new Intl.NumberFormat("id-ID", { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
 
 export default function VillasPage() {
-  const [villas, setVillas] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const { data, error, loading, reload } = useApiResource<Villa[]>("/villas/mine");
+  const [editing, setEditing] = useState<Villa | "new" | null>(null);
+  const [pendingArchive, setPendingArchive] = useState<Villa | null>(null);
+  const [message, setMessage] = useState("");
+  const [busy, setBusy] = useState(false);
 
-  // Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [formData, setFormData] = useState({
-    name: '',
-    location: '',
-    price_per_night: '',
-    capacity: '',
-    description: ''
-  });
-
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imageFile2, setImageFile2] = useState<File | null>(null);
-  const [imageFile3, setImageFile3] = useState<File | null>(null);
-
-  // Subscription limit state
-  const [canAddVilla, setCanAddVilla] = useState(true);
-  const [maxVillas, setMaxVillas] = useState(1);
-  const [currentPlanName, setCurrentPlanName] = useState('Starter');
-
-  const loadVillas = async () => {
-    setLoading(true);
+  async function save(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault(); setBusy(true); setMessage("");
+    const form = new FormData(event.currentTarget);
+    const payload = {
+      name: form.get("name"), location: form.get("location"), description: form.get("description"),
+      price_per_night: Number(form.get("price_per_night")), capacity: Number(form.get("capacity")),
+      facilities: String(form.get("facilities") || "").split(",").map((value) => value.trim()).filter(Boolean),
+    };
     try {
-      const response = await fetchWithAuth('/villas/owner/me');
-      setVillas(Array.isArray(response) ? response : (response.data || []));
-      setError(null);
-    } catch (err: any) {
-      setError(err.message || 'Gagal memuat data properti villa');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    loadVillas();
-    // Load subscription limits
-    fetchWithAuth('/subscriptions/me').then(res => {
-      setCanAddVilla(res.can_add_villa);
-      setMaxVillas(res.max_villas);
-      setCurrentPlanName(res.subscription?.name || 'Starter');
-    }).catch(() => {});
-  }, []);
-
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const handleEditClick = (villa: any) => {
-    setIsEditMode(true);
-    setEditingId(villa.id);
-    setFormData({
-      name: villa.name,
-      location: villa.location,
-      price_per_night: villa.price_per_night.toString(),
-      capacity: villa.capacity !== undefined && villa.capacity !== null ? villa.capacity.toString() : '',
-      description: villa.description || ''
-    });
-    setImageFile(null);
-    setImageFile2(null);
-    setImageFile3(null);
-    setIsModalOpen(true);
-  };
-
-  const handleOpenAddModal = () => {
-    setIsEditMode(false);
-    setEditingId(null);
-    setFormData({
-      name: '',
-      location: '',
-      price_per_night: '',
-      capacity: '',
-      description: ''
-    });
-    setImageFile(null);
-    setImageFile2(null);
-    setImageFile3(null);
-    setIsModalOpen(true);
-  };
-
-  const handleDelete = async (id: string) => {
-    if (confirm('Apakah Anda yakin ingin menghapus villa ini?')) {
-      try {
-        await fetchWithAuth(`/villas/${id}`, { method: 'DELETE' });
-        loadVillas();
-      } catch (err: any) {
-        alert(`Gagal menghapus villa: ${err.message}`);
+      const villa = editing === "new"
+        ? await api<Villa>("/villas", { method: "POST", body: JSON.stringify(payload) })
+        : await api<Villa>(`/villas/${editing?.id}`, { method: "PATCH", body: JSON.stringify(payload) });
+      const images = form.getAll("images").filter((value): value is File => value instanceof File && value.size > 0);
+      if (images.length) {
+        const body = new FormData(); images.forEach((image) => body.append("images", image));
+        await api(`/villas/${villa.id}/images`, { method: "POST", body });
       }
-    }
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
-    try {
-      const endpoint = isEditMode && editingId ? `/villas/${editingId}` : '/villas';
-      const method = isEditMode ? 'PUT' : 'POST';
-      
-      const response = await fetchWithAuth(endpoint, {
-        method,
-        body: JSON.stringify({
-          ...formData,
-          price_per_night: Number(formData.price_per_night),
-          capacity: Number(formData.capacity)
-        })
-      });
-
-      const savedVillaId = isEditMode ? editingId : (response.villa ? response.villa.id : response.id); // Or response.data.id
-
-      // Upload image if selected
-      if ((imageFile || imageFile2 || imageFile3) && savedVillaId) {
-        const imageFormData = new FormData();
-        if (imageFile) imageFormData.append('images', imageFile);
-        if (imageFile2) imageFormData.append('images', imageFile2);
-        if (imageFile3) imageFormData.append('images', imageFile3);
-
-        await fetchWithAuth(`/villas/${savedVillaId}/images`, {
-          method: 'POST',
-          body: imageFormData
-        });
-      }
-
-      setIsModalOpen(false);
-      loadVillas();
-    } catch (err: any) {
-      alert(`Gagal ${isEditMode ? 'mengedit' : 'menambah'} villa: ${err.message}`);
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  if (loading && villas.length === 0) {
-    return <div>Memuat data properti...</div>;
+      setEditing(null); reload();
+    } catch (caught) {
+      setMessage(caught instanceof Error ? caught.message : "Villa tidak dapat disimpan.");
+    } finally { setBusy(false); }
   }
 
-  if (error && villas.length === 0) {
-    return <div className="alert error">{error}</div>;
+  async function archive() {
+    if (!pendingArchive) return;
+    setBusy(true);
+    try { await api(`/villas/${pendingArchive.id}`, { method: "DELETE" }); setPendingArchive(null); reload(); }
+    catch (caught) { setMessage(caught instanceof Error ? caught.message : "Villa tidak dapat diarsipkan."); }
+    finally { setBusy(false); }
   }
 
-  return (
-    <div>
-      <div className={styles.header}>
-        <h2 className={styles.title}>Manajemen Properti</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-            {villas.length} / {maxVillas === -1 ? '∞' : maxVillas} villa
-          </span>
-          <button
-            className="btn btn-primary"
-            onClick={handleOpenAddModal}
-            disabled={!canAddVilla}
-            style={!canAddVilla ? { opacity: 0.6, cursor: 'not-allowed' } : {}}
-          >
-            + Tambah Villa Baru
-          </button>
-        </div>
-      </div>
-
-      {!canAddVilla && (
-        <div style={{
-          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: '1rem 1.5rem', backgroundColor: '#fef3c7', borderRadius: 'var(--radius-md)',
-          border: '1px solid #fcd34d', marginBottom: '1rem'
-        }}>
-          <div>
-            <strong style={{ color: '#92400e' }}>Batas villa tercapai!</strong>
-            <span style={{ color: '#92400e', marginLeft: '0.5rem', fontSize: '0.875rem' }}>
-              Paket {currentPlanName} hanya memperbolehkan {maxVillas} villa.
-            </span>
-          </div>
-          <Link href="/dashboard/subscription" className="btn btn-primary" style={{ textDecoration: 'none', whiteSpace: 'nowrap', padding: '0.5rem 1rem', fontSize: '0.85rem' }}>
-            Upgrade Paket
-          </Link>
-        </div>
-      )}
-
-      <div className={`card ${styles.tableContainer}`}>
-        <table className={styles.table}>
-          <thead>
-            <tr>
-              <th>Nama Properti</th>
-              <th>Lokasi</th>
-              <th>Harga / Malam</th>
-              <th>Status</th>
-              <th>Aksi</th>
-            </tr>
-          </thead>
-          <tbody>
-            {villas.length > 0 ? (
-              villas.map(villa => (
-                <tr key={villa.id}>
-                  <td style={{fontWeight: 500}}>{villa.name}</td>
-                  <td style={{color: 'var(--text-secondary)'}}>{villa.location}</td>
-                  <td>Rp {villa.price_per_night?.toLocaleString('id-ID')}</td>
-                  <td>
-                    <span className={`${styles.badge} ${styles.badgeActive}`}>Aktif</span>
-                  </td>
-                  <td>
-                    <button onClick={() => handleEditClick(villa)} className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', marginRight: '0.5rem'}}>Edit</button>
-                    <button onClick={() => handleDelete(villa.id)} className="btn btn-outline" style={{padding: '0.25rem 0.5rem', fontSize: '0.875rem', color: '#e74c3c', borderColor: '#fadbd8'}}>Hapus</button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan={5} style={{textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)'}}>
-                  Belum ada properti villa. Tambahkan villa pertama Anda!
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {isModalOpen && (
-        <div className={styles.modalOverlay}>
-          <div className={styles.modalContent}>
-            <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>{isEditMode ? 'Edit Villa' : 'Tambah Villa Baru'}</h3>
-              <button className={styles.closeBtn} onClick={() => setIsModalOpen(false)}>×</button>
-            </div>
-            <form onSubmit={handleSubmit}>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Nama Properti</label>
-                <input required type="text" name="name" className="input" value={formData.name} onChange={handleInputChange} placeholder="e.g. Villa Serenity" />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Lokasi</label>
-                <input required type="text" name="location" className="input" value={formData.location} onChange={handleInputChange} placeholder="e.g. Ubud, Bali" />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Harga per Malam (Rp)</label>
-                <input required type="number" name="price_per_night" className="input" value={formData.price_per_night} onChange={handleInputChange} placeholder="e.g. 2500000" />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Kapasitas (Orang)</label>
-                <input required type="number" name="capacity" className="input" value={formData.capacity} onChange={handleInputChange} placeholder="e.g. 4" />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Gambar Villa (Utama)</label>
-                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
-                <small style={{ color: 'var(--text-secondary)', display: 'block', marginTop: '0.25rem' }}>Upload gambar utama (maks 5MB).</small>
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Gambar Villa Kedua (Opsional)</label>
-                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile2(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Gambar Villa Ketiga (Opsional)</label>
-                <input type="file" accept="image/*" className="input" onChange={(e) => setImageFile3(e.target.files?.[0] || null)} style={{ padding: '0.4rem' }} />
-              </div>
-              <div className={styles.formGroup}>
-                <label className={styles.formLabel}>Deskripsi Singkat</label>
-                <textarea name="description" className="input" value={formData.description} onChange={handleInputChange} rows={3} placeholder="Ceritakan tentang properti Anda..." />
-              </div>
-              <div className={styles.modalActions}>
-                <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>Batal</button>
-                <button type="submit" className="btn btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? 'Menyimpan...' : (isEditMode ? 'Simpan Perubahan' : 'Simpan Properti')}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+  return <div className="stack" style={{ gap: "2rem" }}>
+    <div className="spread">
+      <div className="page-heading" style={{ margin: 0 }}><span className="eyebrow">Portofolio</span><h1>Villa Anda</h1><p className="muted">Setiap detail yang diterbitkan akan terlihat di koleksi publik.</p></div>
+      <button className="button primary" onClick={() => setEditing("new")}>Tambah villa</button>
     </div>
-  );
+    {message && <ErrorNotice message={message} />}{error && <ErrorNotice message={error} />}
+    {loading ? <div className="skeleton" /> : data?.length ? <div className="table-wrap"><table>
+      <thead><tr><th>Villa</th><th>Lokasi</th><th>Harga</th><th>Status</th><th>Aksi</th></tr></thead>
+      <tbody>{data.map((villa) => <tr key={villa.id}>
+        <td><div className="cluster">{villa.images[0] && <Image src={villa.images[0]} alt="" width={72} height={54} unoptimized />}<strong>{villa.name}</strong></div></td>
+        <td>{villa.location}</td><td>{rupiah.format(villa.price_per_night)}</td><td><StatusBadge status={villa.is_active ? "ACTIVE" : "INACTIVE"} /></td>
+        <td><div className="cluster"><button className="button" onClick={() => setEditing(villa)}>Edit</button><button className="button danger" onClick={() => setPendingArchive(villa)}>Arsipkan</button></div></td>
+      </tr>)}</tbody>
+    </table></div> : <Empty>Belum ada villa. Tambahkan properti pertama Anda.</Empty>}
+
+    {editing && <Dialog title={editing === "new" ? "Villa baru" : "Sunting villa"} onClose={() => setEditing(null)}><form className="form-grid" onSubmit={save}>
+      <div className="field"><label htmlFor="name">Nama villa</label><input className="input" id="name" name="name" defaultValue={editing === "new" ? "" : editing.name} required /></div>
+      <div className="field"><label htmlFor="location">Lokasi</label><input className="input" id="location" name="location" defaultValue={editing === "new" ? "" : editing.location} required /></div>
+      <div className="field"><label htmlFor="price_per_night">Harga per malam</label><input className="input" id="price_per_night" name="price_per_night" type="number" min="1" defaultValue={editing === "new" ? "" : editing.price_per_night} required /></div>
+      <div className="field"><label htmlFor="capacity">Kapasitas</label><input className="input" id="capacity" name="capacity" type="number" min="1" defaultValue={editing === "new" ? 2 : editing.capacity} required /></div>
+      <div className="field wide"><label htmlFor="description">Deskripsi</label><textarea className="input" id="description" name="description" defaultValue={editing === "new" ? "" : editing.description ?? ""} /></div>
+      <div className="field wide"><label htmlFor="facilities">Fasilitas, pisahkan dengan koma</label><input className="input" id="facilities" name="facilities" defaultValue={editing === "new" ? "" : editing.facilities.join(", ")} /></div>
+      <div className="field wide"><label htmlFor="images">Foto JPG, PNG, atau WebP</label><input className="input" id="images" name="images" type="file" accept="image/jpeg,image/png,image/webp" multiple /></div>
+      {message && <div className="wide"><ErrorNotice message={message} /></div>}
+      <div className="form-actions"><button className="button" type="button" onClick={() => setEditing(null)}>Batal</button><button className="button primary" disabled={busy}>{busy ? "Menyimpan…" : "Simpan villa"}</button></div>
+    </form></Dialog>}
+
+    {pendingArchive && <Dialog title="Arsipkan villa?" onClose={() => setPendingArchive(null)}>
+      <p>Villa <strong>{pendingArchive.name}</strong> akan disembunyikan dari katalog tanpa menghapus datanya.</p>
+      <div className="form-actions"><button className="button" onClick={() => setPendingArchive(null)}>Batal</button><button className="button danger" disabled={busy} onClick={archive}>{busy ? "Mengarsipkan…" : "Arsipkan villa"}</button></div>
+    </Dialog>}
+  </div>;
 }

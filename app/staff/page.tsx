@@ -1,28 +1,3 @@
-'use client';
-
-import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
-import styles from '../page.module.css';
-
-export default function StaffApp() {
-  const router = useRouter();
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    router.push('/search');
-  };
-
-  return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <div className={styles.intro}>
-          <h1>Staff App</h1>
-          <p>Selamat datang di Staff App. Di sini Anda dapat mengelola operasional villa harian.</p>
-        </div>
-        <div className={styles.ctas}>
-          <button onClick={handleLogout} className={styles.secondary}>Logout</button>
-        </div>
-      </main>
-    </div>
-  );
-}
+"use client";
+import type{Villa,Booking,BookingStatus}from"@vilara/contracts";import{AppShell}from"@/components/app-shell";import{RoleGate}from"@/components/role-gate";import{Empty,ErrorNotice,StatusBadge}from"@/components/client-ui";import{useApiResource}from"@/components/use-api-resource";import{api}from"@/lib/api";
+type Assignment={id:string;villas:Villa};export default function Page(){const r=useApiResource<Assignment[]>("/staff/assignments");return <RoleGate role="staff"><AppShell mode="staff"><div className="page-heading"><span className="eyebrow">Operasional hari ini</span><h1>Kedatangan tamu</h1></div>{r.error&&<ErrorNotice message={r.error}/>} {r.loading?<div className="skeleton"/>:r.data?.length?<div className="stack">{r.data.map(x=><Ops key={x.id} villa={x.villas}/>)}</div>:<Empty>Belum ada penugasan.</Empty>}</AppShell></RoleGate>}function Ops({villa}:{villa:Villa}){const r=useApiResource<Booking[]>(`/bookings/villa/${villa.id}`);async function move(id:string,status:BookingStatus){await api(`/bookings/${id}/status`,{method:"PATCH",body:JSON.stringify({status})});r.reload()}return <section className="panel"><h2>{villa.name}</h2>{r.error&&<ErrorNotice message={r.error}/>} {r.data?.length?<div className="table-wrap"><table><tbody>{r.data.map(x=><tr key={x.id}><td>{x.guest_name}</td><td>{x.check_in_date} – {x.check_out_date}</td><td><StatusBadge status={x.status}/></td><td>{x.status==="CONFIRMED"?<button className="button" onClick={()=>move(x.id,"CHECKED_IN")}>Check-in</button>:x.status==="CHECKED_IN"?<button className="button" onClick={()=>move(x.id,"COMPLETED")}>Selesaikan</button>:null}</td></tr>)}</tbody></table></div>:<Empty>Belum ada jadwal.</Empty>}</section>}

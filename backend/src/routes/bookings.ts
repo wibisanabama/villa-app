@@ -49,7 +49,7 @@ router.post("/checkout", asyncHandler(async (request, response) => {
 router.get("/mine", asyncHandler(async (request, response) => {
   const profile = currentProfile(request);
   const { data, error } = await supabaseAdmin.from("bookings")
-    .select("*,villas(name,location,images),booking_cancellations(*)")
+    .select("*,villas(name,location,images),booking_cancellations(*),transactions(id,status,payment_url)")
     .eq("guest_id", profile.id).order("created_at", { ascending: false });
   if (error) throw error;
   return ok(response, data);

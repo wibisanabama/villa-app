@@ -9,6 +9,13 @@ import { hasInvoiceBeenPaid } from "../state.js";
 
 const router = Router();
 
+router.get("/booking/:bookingId", requireAuth, asyncHandler(async (request, response) => {
+  const profile = currentProfile(request);
+  const { data } = await supabaseAdmin.from("transactions").select("*,bookings!inner(id,status,guest_id,check_in_date,check_out_date,villas(name,location))").eq("booking_id", request.params.bookingId).eq("bookings.guest_id", profile.id).order("created_at", { ascending: false }).limit(1).maybeSingle();
+  if (!data) throw new ApiError(404, "TRANSACTION_NOT_FOUND", "Transaksi tidak ditemukan.");
+  return ok(response, data);
+}));
+
 router.get("/:id", requireAuth, asyncHandler(async (request, response) => {
   const profile = currentProfile(request);
   const { data } = await supabaseAdmin.from("transactions")

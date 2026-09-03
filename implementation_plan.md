@@ -53,9 +53,9 @@ SaaS ini dirancang untuk membantu pemilik dan pengelola villa dalam mengelola pr
 - [x] Migrasi workspace dan backend Express ke TypeScript strict.
 - [x] Kontrak domain/validasi bersama, response envelope, security middleware, dan test dasar.
 - [x] Migration serta seed Supabase untuk booking hold, subscription, staf, transaksi, dan admin.
-- [ ] Frontend Supabase SSR dan design system editorial responsif.
-- [ ] Alur tamu, owner, staf, dan super-admin terhubung ke API v1.
-- [ ] Test end-to-end, CI, dokumentasi operasional, serta konfigurasi Vercel/Railway.
+- [x] Frontend Supabase SSR dan design system editorial responsif.
+- [x] Alur tamu, owner, staf, dan super-admin terhubung ke API v1.
+- [x] Test end-to-end, CI, dokumentasi operasional, serta konfigurasi Vercel/Railway.
 
 > [!IMPORTANT]
 > **Aturan Wajib Agen (Agent Rules):**

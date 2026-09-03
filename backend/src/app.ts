@@ -15,6 +15,7 @@ import subscriptionRoutes from "./routes/subscriptions.js";
 import paymentRoutes from "./routes/payments.js";
 import staffRoutes from "./routes/staff.js";
 import adminRoutes from "./routes/admin.js";
+import ownerRoutes from "./routes/owner.js";
 
 export const app = express();
 app.set("trust proxy", 1);
@@ -38,6 +39,7 @@ app.use("/api/v1/subscriptions", subscriptionRoutes);
 app.use("/api/v1/payments", paymentRoutes);
 app.use("/api/v1/staff", staffRoutes);
 app.use("/api/v1/admin", adminRoutes);
+app.use("/api/v1/owner", ownerRoutes);
 app.post("/api/internal/maintenance", requireAuth, asyncHandler(async (request, response) => {
   if (request.headers["x-cron-secret"] !== env.INTERNAL_CRON_SECRET) throw new ApiError(403, "FORBIDDEN", "Cron secret tidak valid.");
   return ok(response, await runMaintenance());
@@ -45,7 +47,8 @@ app.post("/api/internal/maintenance", requireAuth, asyncHandler(async (request, 
 
 app.use((_request, _response, next) => next(new ApiError(404, "NOT_FOUND", "Endpoint tidak ditemukan.")));
 
-const errorHandler: ErrorRequestHandler = (error: unknown, request, response, _next) => {
+const errorHandler: ErrorRequestHandler = (error: unknown, request, response, next) => {
+  void next;
   request.log.error({ err: error }, "request failed");
   const apiError = error instanceof ApiError ? error : undefined;
   const status = apiError?.status ?? (error instanceof ZodError ? 422 : 500);

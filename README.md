@@ -1,36 +1,44 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Vilara
 
-## Getting Started
+Marketplace dan ruang operasional villa untuk tamu, pemilik, staf, dan super-admin. Frontend menggunakan Next.js 16; REST API menggunakan Express TypeScript; autentikasi, PostgreSQL, dan storage menggunakan Supabase; pembayaran menggunakan Mayar.
 
-First, run the development server:
+## Menjalankan lokal
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+1. Salin `.env.example` ke `.env.local` dan `backend/.env.example` ke `backend/.env`.
+2. Jalankan `pnpm install`.
+3. Reset Supabase development lalu terapkan `supabase/migrations` dan `supabase/seed.sql`.
+4. Jalankan API dengan `pnpm dev:api`, lalu frontend dengan `pnpm dev`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Quality gate: `pnpm lint`, `pnpm typecheck`, `pnpm test`, dan `pnpm build:all`.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Database dan reset
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Migration awal adalah destructive untuk database lama. Sebelum production:
 
-## Learn More
+1. Verifikasi Supabase project ID dan ambil backup database/storage.
+2. Uji reset pada project staging.
+3. Jalankan migration, lalu seed paket Starter, Professional, dan Enterprise.
+4. Pastikan Google OAuth redirect memuat `/auth/callback` untuk domain staging/production.
+5. Masukkan email admin awal ke `SUPER_ADMIN_EMAILS`.
 
-To learn more about Next.js, take a look at the following resources:
+Jangan memasukkan service-role key atau Mayar API key ke environment frontend.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Mayar
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- Gunakan akun sandbox terlebih dahulu dan arahkan webhook ke `POST /api/v1/payments/webhooks/mayar`.
+- Invoice menyimpan referensi internal di `extraData`; webhook selalu diverifikasi ulang melalui detail invoice Mayar.
+- Payment review dan refund manual ditangani dari panel admin/owner.
+- Setelah smoke test sandbox lulus, ganti base URL dan API key di Railway tanpa mengubah frontend.
 
-## Deploy on Vercel
+## Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- Vercel: hubungkan root repository dan isi seluruh `NEXT_PUBLIC_*`.
+- Railway: buat service dengan root directory `backend`, gunakan `backend/railway.json`, lalu isi environment dari contoh backend.
+- Tambahkan Railway scheduled service yang menjalankan `pnpm --filter @vilara/api job:maintenance` setiap lima menit.
+- `ALLOWED_ORIGINS` dan `FRONTEND_URL` harus memakai URL Vercel yang sebenarnya.
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Rollback aplikasi dilakukan dengan redeploy commit sebelumnya. Migration database tidak diubah setelah diterapkan; buat migration kompensasi dan pulihkan backup hanya jika migration gagal secara material.
+
+## Status MVP
+
+Tersedia: katalog dan booking terautentikasi, hold 30 menit, pembayaran Mayar, profil/riwayat tamu, studio owner, kalender booking, staf per villa, paket 30 hari dengan grace period, serta admin minimum. Fitur di luar MVP dicatat di `implementation_plan.md`.
